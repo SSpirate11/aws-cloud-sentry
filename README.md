@@ -70,10 +70,11 @@ The #1 fear of deploying AI agents in cloud infrastructure is hallucinated destr
 * **The Voice Rule:** Never read 100 lines of logs over audio. Alexa speaks a concise 2-sentence summary (*"Checkout API is failing with 502s due to an OOM crash in deployment v2.4. Bedrock recommends rollback to revision 41"*).
 * **The Visual Screen:** The Echo Show ambient smart display renders live CloudWatch metrics (Memory, CPU, 5xx count), the full Bedrock diagnostic breakdown, and the active task definition revision in real time.
 
-### 4. Zero-Friction Dual Mode (Live AWS + Offline Mock Simulator)
-Judges can run and test CloudSentry **instantly** without needing an active AWS account:
-* **Live AWS Mode:** Detects `AWS_ACCESS_KEY_ID` and connects directly to live CloudWatch, ECS, and Bedrock APIs via `boto3`.
-* **High-Fidelity Mock Simulator:** In offline/mock mode, CloudSentry runs against realistic production outage data (e.g., a checkout API memory leak following deployment `v2.4.1`).
+### 4. Zero-Cost Triple-Tier Architecture (Live AWS, LocalStack, and Mock)
+Judges and developers can run CloudSentry in three distinct operational modes without incurring cloud bills:
+1. **LocalStack Cloud Emulation:** Run against a local, containerized AWS environment (`http://localhost:4566`). Standard `boto3` makes signed AWS SigV4 HTTP requests to real CloudWatch Alarms and Log Groups at **$0.00 cost**.
+2. **Live AWS Cloud:** Automatically activates when `AWS_ACCESS_KEY_ID` is present, querying production CloudWatch, ECS, and Bedrock.
+3. **Zero-Config Mock Engine:** Automatically activates if neither is present, allowing immediate evaluation without Docker or credentials.
 
 ---
 
@@ -114,11 +115,25 @@ git clone https://github.com/YOUR_USERNAME/cloud-sentry.git
 cd cloud-sentry
 ```
 
-### 2. Launch with One Command
-We provide an automated launch script that starts both the backend MCP server and the frontend simulator:
+### 2. Launch Options
+
+#### Option A: One-Command Launch (Zero-Config Mock Mode)
 ```bash
 chmod +x run.sh
 ./run.sh
+```
+
+#### Option B: Zero-Cost Live AWS Emulation (LocalStack)
+To test authentic signed `boto3` requests against local CloudWatch without an AWS bill:
+```bash
+# 1. Start LocalStack
+docker compose up -d
+
+# 2. Seed realistic CloudWatch alarms and container logs
+backend/venv/bin/python3 backend/seed_localstack.py
+
+# 3. Launch CloudSentry targeting LocalStack
+AWS_ENDPOINT_URL=http://localhost:4566 ./run.sh
 ```
 
 Or run manually:
@@ -176,3 +191,4 @@ Open **`http://localhost:5173`** in Google Chrome or Microsoft Edge.
   * `anishamalde` (Anisha Malde)
   * `mosesroth` (Moses Roth)
   * `emersonsklar` (Emerson Sklar)
+

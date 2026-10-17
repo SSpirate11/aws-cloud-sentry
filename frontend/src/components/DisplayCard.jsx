@@ -185,3 +185,4 @@ export default function DisplayCard({ card, state }) {
     </div>
   );
 }
+

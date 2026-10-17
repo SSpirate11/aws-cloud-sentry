@@ -127,3 +127,4 @@ export default function EchoRing({ state, isListening, isSpeaking, onToggleMic }
     </div>
   );
 }
+

@@ -338,3 +338,4 @@ async def health_check():
         "mcp_endpoint": "/mcp",
         "aws_connected": aws_tools.has_aws_creds
     }
+
