@@ -78,6 +78,16 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-timeout for LISTENING state (like real Amazon Echo: returns to sleep after 7s of silence)
+  useEffect(() => {
+    if (state === 'LISTENING') {
+      const timer = setTimeout(() => {
+        setState('STANDBY');
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
+
   // Web Speech API with "Alexa" Wake Phrase Detection
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -109,6 +119,7 @@ export default function App() {
       if (/\b(alexa|hey alexa|echo)\b/i.test(heardText)) {
         playAlexaChime();
         setWakeDetected(true);
+        setState('LISTENING');
         setTimeout(() => setWakeDetected(false), 2500);
       }
 
@@ -126,9 +137,15 @@ export default function App() {
       if (event.error !== 'no-speech') {
         console.warn('Speech recognition notice:', event.error);
       }
+      if (stateRef.current === 'LISTENING') {
+        setState('STANDBY');
+      }
     };
 
     recognition.onend = () => {
+      if (stateRef.current === 'LISTENING') {
+        setState('STANDBY');
+      }
       // Safely restart passive wake-word listening if enabled and Alexa isn't speaking or thinking
       if (wakeWordActiveRef.current && !isSpeakingRef.current && stateRef.current !== 'THINKING') {
         try {
@@ -138,12 +155,6 @@ export default function App() {
     };
 
     recognitionRef.current = recognition;
-
-    if (wakeWordEnabled && !isSpeakingRef.current) {
-      try {
-        recognition.start();
-      } catch (e) {}
-    }
 
     return () => {
       try {
@@ -387,7 +398,7 @@ export default function App() {
               background: wakeWordEnabled ? 'rgba(0, 210, 255, 0.25)' : 'rgba(255,255,255,0.08)',
               color: wakeWordEnabled ? '#e0f2fe' : '#94a3b8'
             }}>
-              {wakeWordEnabled ? 'LISTENING' : 'OFF'}
+              {wakeDetected ? 'TRIGGERED' : wakeWordEnabled ? 'READY' : 'OFF'}
             </span>
           </button>
 
@@ -611,8 +622,8 @@ export default function App() {
                 {isListening ? <Radio size={18} color="#fff" style={{ animation: 'pulse-fast 1s infinite' }} /> : <Mic size={18} />}
                 <span>
                   {isListening 
-                    ? (wakeWordEnabled ? 'Listening for "Alexa"...' : 'Mic Active (Click to Mute)') 
-                    : 'Click to Enable Microphone'}
+                    ? 'Listening... (Speak your command)' 
+                    : 'Tap to Speak into Alexa+'}
                 </span>
               </button>
 
