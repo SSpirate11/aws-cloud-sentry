@@ -1,0 +1,66 @@
+{
+  "$schema": "https://developer.amazon.com/schemas/alexa-plus/addon-manifest-v1.json",
+  "name": "AWS CloudSentry",
+  "version": "1.0.0",
+  "namespace": "aws.sre.commander",
+  "description": "Autonomous 3 AM Voice Incident Commander for AWS SREs. Triage CloudWatch alarms, diagnose stack traces with Bedrock, and safely execute ECS rollbacks with Voice 2FA.",
+  "publisher": {
+    "name": "CloudSentry Contributors",
+    "contact": "support@cloudsentry.dev"
+  },
+  "transport": {
+    "type": "streamable-http",
+    "spec_version": "2025-11-25+",
+    "endpoint_url": "${CLOUDSENTRY_ENDPOINT_URL:-http://localhost:8000/mcp}",
+    "health_check_path": "/api/health"
+  },
+  "capabilities": [
+    "tools",
+    "resources",
+    "mcp-apps-ui"
+  ],
+  "scopes": [
+    "mcp:service",
+    "mcp:tools"
+  ],
+  "tools": [
+    {
+      "name": "get_active_alarms",
+      "description": "Query AWS CloudWatch for active ALARM states across production services and clusters.",
+      "safety_level": "READ_ONLY"
+    },
+    {
+      "name": "fetch_error_logs",
+      "description": "Fetch trailing error logs and stack traces from AWS CloudWatch Logs for a failing service.",
+      "safety_level": "READ_ONLY"
+    },
+    {
+      "name": "diagnose_incident",
+      "description": "Use AWS Bedrock (Claude 3.5 Sonnet) to perform automated root-cause analysis on error logs.",
+      "safety_level": "READ_ONLY"
+    },
+    {
+      "name": "execute_rollback",
+      "description": "Roll back an Amazon ECS service task definition to a previous stable revision. Enforces Voice 2FA.",
+      "safety_level": "MUTATING",
+      "requires_user_confirmation": true
+    },
+    {
+      "name": "post_slack_notification",
+      "description": "Post an incident remediation summary and audit trail to the team Slack channel.",
+      "safety_level": "WRITE_ONLY"
+    }
+  ],
+  "display": {
+    "category": "developer_tools",
+    "icon": "https://raw.githubusercontent.com/sspirate/cloud-sentry/main/assets/icon.png",
+    "color_theme": "#00d2ff",
+    "multi_modal_views": [
+      {
+        "device_type": "echo_show",
+        "view_type": "mcp_app_card",
+        "template": "incident_telemetry_card"
+      }
+    ]
+  }
+}
