@@ -72,9 +72,13 @@ The #1 fear of deploying AI agents in cloud infrastructure is hallucinated destr
 
 ### 4. Zero-Cost Triple-Tier Architecture (Live AWS, LocalStack, and Mock)
 Judges and developers can run CloudSentry in three distinct operational modes without incurring cloud bills:
-1. **LocalStack Cloud Emulation:** Run against a local, containerized AWS environment (`http://localhost:4566`). Standard `boto3` makes signed AWS SigV4 HTTP requests to real CloudWatch Alarms and Log Groups at **$0.00 cost**.
+1. **Local AWS Emulation ($0.00 Cost):** Run `./run.sh --local-aws` to launch with real CloudWatch Alarms and Log Groups on port 4566. Standard `boto3` makes authentic signed AWS SigV4 HTTP requests at zero cost.
 2. **Live AWS Cloud:** Automatically activates when `AWS_ACCESS_KEY_ID` is present, querying production CloudWatch, ECS, and Bedrock.
 3. **Zero-Config Mock Engine:** Automatically activates if neither is present, allowing immediate evaluation without Docker or credentials.
+
+### 5. Interactive 3D Amazon Echo Hardware & Hands-Free Alexa Voice
+* **Interactive 3D Echo 4th Gen (Three.js):** Features a rendered charcoal acoustic fabric sphere, top tactile buttons, and a dynamic 360° illuminated base light ring that reacts in real time (Cyan Standby/Listening, Blue Thinking spinner, Amber Voice 2FA, Green Resolution). Full orbital mouse/touch drag controls let you inspect the hardware from any angle!
+* **Natural Hands-Free Voice Control:** Speak *"Alexa"* naturally—the system plays the authentic dual-tone acoustic chime (G5 $\to$ C6), illuminates the cyan listening beam, and extracts your instruction without awkward wake banners or audio clipping.
 
 ---
 
