@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --echo-cyan: #00d2ff;
-  --echo-blue: #0077ff;
-  --echo-purple: #9d4edd;
-  --echo-amber: #f59e0b;
-  --echo-green: #10b981;
-  --echo-red: #ef4444;
+  --alexa-cyan: #00d2ff;
+  --alexa-blue: #0055ff;
+  --alexa-deep-blue: #001633;
+  --alexa-amber: #ff9900;
+  --alexa-green: #00e676;
+  --alexa-red: #ff334b;
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #080c14;
+  background-color: #070a11;
   color: #f1f5f9;
   min-height: 100vh;
   overflow-x: hidden;
@@ -27,83 +27,248 @@ code, pre {
 
 /* Glassmorphism panels */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(13, 19, 33, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
 }
 
 .glass-panel-glow {
-  box-shadow: 0 0 25px -5px rgba(0, 210, 255, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 30px -5px rgba(0, 210, 255, 0.25), 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
 
-/* Glowing Alexa Light Ring Animation */
-.alexa-orb {
+/* ==========================================================================
+   AUTHENTIC AMAZON ECHO LIGHT RING ANIMATIONS
+   Exact recreations of the physical Amazon Echo LED ring behaviors:
+   - Standby: Deep cyan-blue idle breathing
+   - Listening: Directional cyan focal beam with audio pulse
+   - Thinking: Authentic twin-beam spinning light ring
+   - Awaiting Confirmation: Intense Amazon amber warning sweep
+   - Resolved: Emerald green completion wave
+   ========================================================================== */
+
+.echo-ring-wrapper {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 170px;
+  height: 170px;
   border-radius: 50%;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.alexa-orb.standby {
-  background: radial-gradient(circle, #0077ff 0%, #00d2ff 60%, rgba(0,210,255,0) 70%);
-  box-shadow: 0 0 35px 5px rgba(0, 119, 255, 0.45);
-  animation: pulse-slow 3s infinite ease-in-out;
+.echo-ring-wrapper:hover {
+  transform: scale(1.04);
 }
 
-.alexa-orb.listening {
-  background: radial-gradient(circle, #00d2ff 0%, #38bdf8 60%, rgba(56,189,248,0) 70%);
-  box-shadow: 0 0 50px 15px rgba(0, 210, 255, 0.7);
+.echo-ring-wrapper:active {
+  transform: scale(0.98);
+}
+
+/* The Glowing LED Light Ring (Doughnut) */
+.echo-light-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 8px; /* Thickness of the LED ring */
+  mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #fff calc(100% - 7px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #fff calc(100% - 7px));
+  transition: all 0.6s ease;
+}
+
+/* Neon Ambient Bloom behind the ring */
+.echo-bloom {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  filter: blur(18px);
+  opacity: 0.7;
+  transition: all 0.6s ease;
+  pointer-events: none;
+}
+
+/* 1. STANDBY STATE (Idle Breathing) */
+.echo-state-standby .echo-light-ring {
+  background: conic-gradient(from 0deg, #001633 0%, #0055ff 25%, #00d2ff 50%, #0055ff 75%, #001633 100%);
+  animation: echo-rotate-slow 12s linear infinite;
+}
+.echo-state-standby .echo-bloom {
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.45) 0%, rgba(0, 85, 255, 0.2) 60%, transparent 75%);
+  animation: echo-breathe 4s infinite ease-in-out;
+}
+
+/* 2. LISTENING STATE (Intense Cyan Beam) */
+.echo-state-listening .echo-light-ring {
+  background: conic-gradient(from 180deg, #001633 0%, #0055ff 25%, #00d2ff 46%, #ffffff 50%, #00d2ff 54%, #0055ff 75%, #001633 100%);
+  animation: echo-pulse-listen 1.2s infinite ease-in-out;
+}
+.echo-state-listening .echo-bloom {
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.85) 0%, rgba(0, 85, 255, 0.4) 55%, transparent 75%);
+  animation: echo-breathe-fast 1.2s infinite ease-in-out;
+}
+
+/* 3. THINKING STATE (The Iconic Alexa Dual-Beam Spinner) */
+.echo-state-thinking .echo-light-ring {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    #0055ff 15%,
+    #00d2ff 32%,
+    #ffffff 38%,
+    transparent 45%,
+    transparent 50%,
+    #0055ff 65%,
+    #00d2ff 82%,
+    #ffffff 88%,
+    transparent 95%
+  );
+  animation: echo-spin 1.25s linear infinite;
+}
+.echo-state-thinking .echo-bloom {
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.7) 0%, rgba(157, 78, 221, 0.35) 60%, transparent 75%);
+  animation: echo-spin 3s linear infinite;
+}
+
+/* 4. AWAITING CONFIRMATION (Amazon Echo Amber Warning Sweep) */
+.echo-state-awaiting_confirmation .echo-light-ring {
+  background: conic-gradient(from 0deg, #3d1f00 0%, #ff8800 25%, #ffb700 48%, #ffffff 50%, #ffb700 52%, #ff8800 75%, #3d1f00 100%);
+  animation: echo-warn-sweep 1.8s ease-in-out infinite alternate;
+}
+.echo-state-awaiting_confirmation .echo-bloom {
+  background: radial-gradient(circle, rgba(255, 153, 0, 0.85) 0%, rgba(245, 158, 11, 0.4) 60%, transparent 75%);
+  animation: echo-breathe-fast 1s infinite ease-in-out;
+}
+
+/* 5. RESOLVED STATE (Emerald Green Completion Ring) */
+.echo-state-resolved .echo-light-ring {
+  background: conic-gradient(from 0deg, #002b11 0%, #00aa44 25%, #00e676 50%, #a7f3d0 75%, #002b11 100%);
+  animation: echo-rotate-slow 6s linear infinite;
+}
+.echo-state-resolved .echo-bloom {
+  background: radial-gradient(circle, rgba(0, 230, 118, 0.75) 0%, rgba(16, 185, 129, 0.35) 60%, transparent 75%);
+  animation: echo-breathe 2.5s infinite ease-in-out;
+}
+
+/* 6. CRITICAL INCIDENT ALARM STATE */
+.echo-state-incident_active .echo-light-ring {
+  background: conic-gradient(from 0deg, #3b0007 0%, #dc2626 25%, #ff334b 48%, #ffffff 50%, #ff334b 52%, #dc2626 75%, #3b0007 100%);
+  animation: echo-spin 2s linear infinite;
+}
+.echo-state-incident_active .echo-bloom {
+  background: radial-gradient(circle, rgba(255, 51, 75, 0.85) 0%, rgba(220, 38, 38, 0.4) 60%, transparent 75%);
+  animation: echo-breathe-fast 1s infinite ease-in-out;
+}
+
+/* Echo Speaker Inner Cap (Matte Acoustic Core) */
+.echo-inner-core {
+  position: relative;
+  width: 146px;
+  height: 146px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #151d2f 0%, #0a0e19 85%);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Subtle speaker fabric texture overlay */
+.echo-speaker-grille {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0.12;
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* Keyframe Animations */
+@keyframes echo-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes echo-rotate-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes echo-breathe {
+  0%, 100% { transform: scale(0.95); opacity: 0.55; }
+  50% { transform: scale(1.08); opacity: 0.85; }
+}
+
+@keyframes echo-breathe-fast {
+  0%, 100% { transform: scale(1.0); opacity: 0.65; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes echo-pulse-listen {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.02); filter: brightness(1.25); }
+}
+
+@keyframes echo-warn-sweep {
+  0% { transform: rotate(0deg) scale(1); filter: brightness(1); }
+  100% { transform: rotate(90deg) scale(1.03); filter: brightness(1.3); }
+}
+
+/* ==========================================================================
+   ECHO SHOW AMBIENT BOTTOM LIGHT BAR
+   The iconic glowing gradient bar that runs along the bottom of an Echo Show screen
+   ========================================================================== */
+.echo-show-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  z-index: 50;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.echo-show-bottom-bar.standby {
+  background: linear-gradient(90deg, transparent, rgba(0, 85, 255, 0.4), rgba(0, 210, 255, 0.7), rgba(0, 85, 255, 0.4), transparent);
+  box-shadow: 0 -4px 15px rgba(0, 210, 255, 0.4);
+}
+
+.echo-show-bottom-bar.listening {
+  height: 7px;
+  background: linear-gradient(90deg, transparent, #0055ff, #00d2ff, #ffffff, #00d2ff, #0055ff, transparent);
+  box-shadow: 0 -6px 25px rgba(0, 210, 255, 0.9);
   animation: pulse-fast 1.2s infinite ease-in-out;
-  transform: scale(1.08);
 }
 
-.alexa-orb.thinking {
-  background: radial-gradient(circle, #9d4edd 0%, #c77dff 60%, rgba(157,78,221,0) 70%);
-  box-shadow: 0 0 50px 15px rgba(157, 78, 221, 0.7);
+.echo-show-bottom-bar.thinking {
+  height: 6px;
+  background: linear-gradient(90deg, transparent, #0055ff, #00d2ff, #9d4edd, #00d2ff, #0055ff, transparent);
+  box-shadow: 0 -5px 22px rgba(0, 210, 255, 0.8);
   animation: spin-glow 2s infinite linear;
 }
 
-.alexa-orb.awaiting_confirmation {
-  background: radial-gradient(circle, #f59e0b 0%, #fbbf24 60%, rgba(245,158,11,0) 70%);
-  box-shadow: 0 0 55px 15px rgba(245, 158, 11, 0.75);
+.echo-show-bottom-bar.awaiting_confirmation {
+  height: 7px;
+  background: linear-gradient(90deg, transparent, #ff8800, #ffb700, #ffffff, #ffb700, #ff8800, transparent);
+  box-shadow: 0 -6px 25px rgba(255, 153, 0, 0.9);
   animation: pulse-warn 1s infinite ease-in-out;
-  transform: scale(1.1);
 }
 
-.alexa-orb.resolved {
-  background: radial-gradient(circle, #10b981 0%, #34d399 60%, rgba(16,185,129,0) 70%);
-  box-shadow: 0 0 50px 15px rgba(16, 185, 129, 0.75);
-  animation: pulse-slow 2s infinite ease-in-out;
+.echo-show-bottom-bar.resolved {
+  height: 6px;
+  background: linear-gradient(90deg, transparent, #00aa44, #00e676, #a7f3d0, #00e676, #00aa44, transparent);
+  box-shadow: 0 -5px 20px rgba(0, 230, 118, 0.8);
 }
 
-.alexa-orb.incident_active {
-  background: radial-gradient(circle, #ef4444 0%, #f87171 60%, rgba(239,68,68,0) 70%);
-  box-shadow: 0 0 50px 15px rgba(239, 68, 68, 0.75);
-  animation: pulse-fast 1s infinite ease-in-out;
-}
-
-@keyframes pulse-slow {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.05); opacity: 1; }
-}
-
-@keyframes pulse-fast {
-  0%, 100% { transform: scale(1.04); opacity: 0.9; }
-  50% { transform: scale(1.14); opacity: 1; }
-}
-
-@keyframes pulse-warn {
-  0%, 100% { transform: scale(1.05); opacity: 0.8; }
-  50% { transform: scale(1.18); opacity: 1; }
-}
-
-@keyframes spin-glow {
-  0% { transform: rotate(0deg) scale(1.05); }
-  50% { transform: rotate(180deg) scale(1.12); }
-  100% { transform: rotate(360deg) scale(1.05); }
+.echo-show-bottom-bar.incident_active {
+  height: 7px;
+  background: linear-gradient(90deg, transparent, #dc2626, #ff334b, #ffffff, #ff334b, #dc2626, transparent);
+  box-shadow: 0 -6px 25px rgba(255, 51, 75, 0.85);
 }
 
 /* Custom Scrollbar */
@@ -121,4 +286,3 @@ code, pre {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.7);
 }
-
