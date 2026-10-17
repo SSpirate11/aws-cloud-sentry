@@ -27,7 +27,7 @@ export default function App() {
     title: "AWS CloudSentry Ready",
     badge: "STANDBY",
     badge_color: "blue",
-    status_message: "Wake phrase 'Alexa' is active. Say 'Alexa, what is failing in production?' to inspect CloudWatch alarms."
+    status_message: "Say 'Alexa, what is failing in production?' to inspect CloudWatch alarms."
   });
   const [toolTraces, setToolTraces] = useState([]);
   
@@ -428,7 +428,7 @@ export default function App() {
         title: "AWS CloudSentry Ready",
         badge: "STANDBY",
         badge_color: "blue",
-        status_message: "Wake phrase 'Alexa' is active. Say 'Alexa, what is failing in production?' to inspect CloudWatch alarms."
+        status_message: "Say 'Alexa, what is failing in production?' to inspect CloudWatch alarms."
       });
       setToolTraces([]);
       updateState('STANDBY');
@@ -537,10 +537,10 @@ export default function App() {
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
-            title="Toggle Hands-Free 'Alexa' Wake Word Detection"
+            title="Toggle Hands-Free Voice Control"
           >
             <Radio size={13} color={wakeWordEnabled ? '#00d2ff' : '#64748b'} />
-            <span>Wake Word: "Alexa"</span>
+            <span>Hands-Free Mic</span>
             <span style={{
               fontSize: '0.62rem',
               padding: '0.1rem 0.35rem',
@@ -548,7 +548,7 @@ export default function App() {
               background: wakeWordEnabled ? 'rgba(0, 210, 255, 0.25)' : 'rgba(255,255,255,0.08)',
               color: wakeWordEnabled ? '#e0f2fe' : '#94a3b8'
             }}>
-              {wakeDetected ? 'TRIGGERED' : wakeWordEnabled ? 'READY' : 'OFF'}
+              {wakeWordEnabled ? 'ACTIVE' : 'MUTED'}
             </span>
           </button>
 
@@ -731,29 +731,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Wake Word Recognition Flash Banner */}
-            {wakeDetected && (
-              <div style={{
-                position: 'absolute',
-                top: '12px',
-                zIndex: 10,
-                padding: '0.3rem 0.85rem',
-                borderRadius: '9999px',
-                background: 'rgba(0, 210, 255, 0.25)',
-                border: '1px solid rgba(0, 210, 255, 0.6)',
-                color: '#00d2ff',
-                fontSize: '0.74rem',
-                fontWeight: '800',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                boxShadow: '0 0 20px rgba(0, 210, 255, 0.5)',
-                animation: 'pulse-fast 0.8s infinite'
-              }}>
-                <Zap size={13} fill="#00d2ff" />
-                <span>"Alexa" Wake Word Recognized</span>
-              </div>
-            )}
 
             {/* The Authentic Echo 3D Model or 2D LED Light Ring */}
             <div style={{ margin: '0.2rem 0', width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -879,7 +856,7 @@ export default function App() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#64748b' }}>
-                Try Saying with Wake Phrase "Alexa"
+                Recommended Voice Commands
               </div>
               <button
                 onClick={resetIncident}

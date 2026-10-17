@@ -133,10 +133,10 @@ async def handle_voice_turn(req: VoiceQueryRequest):
         return {
             "spoken_response": "Yes? I'm listening. What would you like me to check in AWS production?",
             "display_card": {
-                "title": "Alexa+ Incident Commander Listening",
-                "badge": "WAKE PHRASE RECOGNIZED",
+                "title": "Alexa+ Incident Commander",
+                "badge": "LISTENING",
                 "badge_color": "blue",
-                "status_message": "Wake word recognized. Say 'What is failing in production?' or request a service action."
+                "status_message": "Listening... Ask 'What is failing in production?' or request a service action."
             },
             "state": "LISTENING",
             "tool_traces": []

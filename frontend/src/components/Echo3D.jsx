@@ -437,3 +437,4 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
     </div>
   );
 }
+
