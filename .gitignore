@@ -1,0 +1,16 @@
+# Python virtualenv & cache
+backend/venv/
+backend/__pycache__/
+*.pyc
+*.pyo
+
+# Node modules & build
+frontend/node_modules/
+frontend/dist/
+.vite/
+
+# Environment & IDE
+.env
+.DS_Store
+.idea/
+.vscode/

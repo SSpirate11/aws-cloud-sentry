@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --echo-cyan: #00d2ff;
+  --echo-blue: #0077ff;
+  --echo-purple: #9d4edd;
+  --echo-amber: #f59e0b;
+  --echo-green: #10b981;
+  --echo-red: #ef4444;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #080c14;
+  color: #f1f5f9;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Glassmorphism panels */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-glow {
+  box-shadow: 0 0 25px -5px rgba(0, 210, 255, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Glowing Alexa Light Ring Animation */
+.alexa-orb {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.alexa-orb.standby {
+  background: radial-gradient(circle, #0077ff 0%, #00d2ff 60%, rgba(0,210,255,0) 70%);
+  box-shadow: 0 0 35px 5px rgba(0, 119, 255, 0.45);
+  animation: pulse-slow 3s infinite ease-in-out;
+}
+
+.alexa-orb.listening {
+  background: radial-gradient(circle, #00d2ff 0%, #38bdf8 60%, rgba(56,189,248,0) 70%);
+  box-shadow: 0 0 50px 15px rgba(0, 210, 255, 0.7);
+  animation: pulse-fast 1.2s infinite ease-in-out;
+  transform: scale(1.08);
+}
+
+.alexa-orb.thinking {
+  background: radial-gradient(circle, #9d4edd 0%, #c77dff 60%, rgba(157,78,221,0) 70%);
+  box-shadow: 0 0 50px 15px rgba(157, 78, 221, 0.7);
+  animation: spin-glow 2s infinite linear;
+}
+
+.alexa-orb.awaiting_confirmation {
+  background: radial-gradient(circle, #f59e0b 0%, #fbbf24 60%, rgba(245,158,11,0) 70%);
+  box-shadow: 0 0 55px 15px rgba(245, 158, 11, 0.75);
+  animation: pulse-warn 1s infinite ease-in-out;
+  transform: scale(1.1);
+}
+
+.alexa-orb.resolved {
+  background: radial-gradient(circle, #10b981 0%, #34d399 60%, rgba(16,185,129,0) 70%);
+  box-shadow: 0 0 50px 15px rgba(16, 185, 129, 0.75);
+  animation: pulse-slow 2s infinite ease-in-out;
+}
+
+.alexa-orb.incident_active {
+  background: radial-gradient(circle, #ef4444 0%, #f87171 60%, rgba(239,68,68,0) 70%);
+  box-shadow: 0 0 50px 15px rgba(239, 68, 68, 0.75);
+  animation: pulse-fast 1s infinite ease-in-out;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes pulse-fast {
+  0%, 100% { transform: scale(1.04); opacity: 0.9; }
+  50% { transform: scale(1.14); opacity: 1; }
+}
+
+@keyframes pulse-warn {
+  0%, 100% { transform: scale(1.05); opacity: 0.8; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+@keyframes spin-glow {
+  0% { transform: rotate(0deg) scale(1.05); }
+  50% { transform: rotate(180deg) scale(1.12); }
+  100% { transform: rotate(360deg) scale(1.05); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
