@@ -31,20 +31,36 @@ export default function App() {
   
   const recognitionRef = useRef(null);
   const stateRef = useRef(state);
-  stateRef.current = state;
   const isSpeakingRef = useRef(isSpeaking);
-  isSpeakingRef.current = isSpeaking;
   const wakeWordActiveRef = useRef(wakeWordEnabled);
-  wakeWordActiveRef.current = wakeWordEnabled;
-
+  const isQueryInProgressRef = useRef(false);
+  const isRecognizingRef = useRef(false);
+  const lastChimeTimeRef = useRef(0);
+  const speechSilenceTimerRef = useRef(null);
   const wakeTriggeredRef = useRef(false);
   const audioCtxRef = useRef(null);
+
+  // Synchronous state transition helper to eliminate React async render race conditions
+  const updateState = (newState) => {
+    stateRef.current = newState;
+    setState(newState);
+  };
+
+  // Sync ref mirrors
+  stateRef.current = state;
+  isSpeakingRef.current = isSpeaking;
+  wakeWordActiveRef.current = wakeWordEnabled;
 
   // Single source of truth: isListening is true ONLY when state is 'LISTENING'
   const isListening = (state === 'LISTENING');
 
-  // Authentic Amazon Echo dual-tone acoustic wake chime (G5 784Hz -> C6 1046Hz)
+  // Authentic Amazon Echo dual-tone acoustic wake chime (G5 784Hz -> C6 1046Hz) - Debounced
   const playAlexaChime = () => {
+    const now = Date.now();
+    // Guard against multiple noise / rapid repeating chimes within 3.5 seconds
+    if (now - lastChimeTimeRef.current < 3500) return;
+    lastChimeTimeRef.current = now;
+
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -61,14 +77,14 @@ export default function App() {
       osc.connect(gain);
       gain.connect(ctx.destination);
       
-      const now = ctx.currentTime;
-      osc.frequency.setValueAtTime(784, now); // G5 note
-      osc.frequency.setValueAtTime(1046, now + 0.08); // C6 note
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+      const audioTime = ctx.currentTime;
+      osc.frequency.setValueAtTime(784, audioTime); // G5 note
+      osc.frequency.setValueAtTime(1046, audioTime + 0.08); // C6 note
+      gain.gain.setValueAtTime(0.12, audioTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioTime + 0.32);
       
-      osc.start(now);
-      osc.stop(now + 0.32);
+      osc.start(audioTime);
+      osc.stop(audioTime + 0.32);
     } catch (e) {
       // AudioContext may require user gesture on first interaction
     }
@@ -86,18 +102,20 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-timeout for LISTENING state (like real Amazon Echo: returns to sleep after 7s of silence)
+  // Auto-timeout for LISTENING state (like real Amazon Echo: returns to sleep after 8s of silence)
   useEffect(() => {
     if (state === 'LISTENING') {
       const timer = setTimeout(() => {
-        wakeTriggeredRef.current = false;
-        setState('STANDBY');
-      }, 7000);
+        if (!isQueryInProgressRef.current) {
+          wakeTriggeredRef.current = false;
+          updateState('STANDBY');
+        }
+      }, 8000);
       return () => clearTimeout(timer);
     }
   }, [state]);
 
-  // Web Speech API with Hands-Free "Alexa" Wake Phrase Detection
+  // Web Speech API with Natural "Alexa" Wake Word Detection & Intent Dispatching
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
@@ -107,41 +125,75 @@ export default function App() {
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
+    recognition.onstart = () => {
+      isRecognizingRef.current = true;
+    };
+
     recognition.onresult = (event) => {
-      // Ignore audio if Alexa is currently speaking or executing tools
-      if (isSpeakingRef.current || stateRef.current === 'THINKING') return;
+      // Ignore audio while Alexa is speaking or backend query is in progress
+      if (isSpeakingRef.current || isQueryInProgressRef.current || stateRef.current === 'THINKING') return;
 
-      let finalTranscript = '';
-      let interimTranscript = '';
+      let fullTranscript = '';
+      let hasFinal = false;
 
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
+      for (let i = 0; i < event.results.length; ++i) {
+        fullTranscript += event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        } else {
-          interimTranscript += event.results[i][0].transcript;
+          hasFinal = true;
         }
       }
 
-      const heardText = (finalTranscript || interimTranscript).trim();
+      const rawText = fullTranscript.trim();
+      if (!rawText) return;
 
-      // Spot "Alexa" or "Hey Alexa" wake phrase - DEBOUNCED TO PLAY EXACTLY ONCE
-      if (/\b(alexa|hey alexa|echo)\b/i.test(heardText)) {
+      const hasAlexaWake = /\b(alexa|hey alexa|echo)\b/i.test(rawText);
+
+      // 1. Wake phrase triggered
+      if (hasAlexaWake) {
         if (!wakeTriggeredRef.current) {
           wakeTriggeredRef.current = true;
-          playAlexaChime(); // Plays exactly once!
+          playAlexaChime();
           setWakeDetected(true);
-          setState('LISTENING');
-          setTimeout(() => setWakeDetected(false), 2500);
+          if (stateRef.current !== 'AWAITING_CONFIRMATION') {
+            updateState('LISTENING');
+          }
+          setTimeout(() => setWakeDetected(false), 2200);
         }
       }
 
-      if (finalTranscript.trim()) {
-        const text = finalTranscript.trim();
-        const mentionsAlexa = /\b(alexa|hey alexa)\b/i.test(text);
-        
-        if (mentionsAlexa || stateRef.current === 'AWAITING_CONFIRMATION' || stateRef.current === 'LISTENING') {
-          handleSendQuery(text);
+      // 2. Direct Confirmation handling for Voice 2FA
+      if (stateRef.current === 'AWAITING_CONFIRMATION') {
+        if (/\b(confirm|yes|authorize|proceed|rollback)\b/i.test(rawText)) {
+          clearTimeout(speechSilenceTimerRef.current);
+          handleSendQuery(rawText);
+          return;
         }
+      }
+
+      // 3. Command extraction after wake word
+      const commandText = rawText.replace(/^(hey\s+)?(alexa|echo)[,\s]*/i, '').trim();
+
+      if (commandText.length > 2) {
+        // User spoke a meaningful request (e.g. "what is failing in production")
+        clearTimeout(speechSilenceTimerRef.current);
+        speechSilenceTimerRef.current = setTimeout(() => {
+          if (!isQueryInProgressRef.current && (hasAlexaWake || stateRef.current === 'LISTENING')) {
+            handleSendQuery(rawText);
+          }
+        }, 900);
+
+        if (hasFinal) {
+          clearTimeout(speechSilenceTimerRef.current);
+          handleSendQuery(rawText);
+        }
+      } else if (hasAlexaWake && hasFinal) {
+        // Bare "Alexa" wake word spoken with no trailing request
+        clearTimeout(speechSilenceTimerRef.current);
+        speechSilenceTimerRef.current = setTimeout(() => {
+          if (!isQueryInProgressRef.current && stateRef.current === 'LISTENING') {
+            handleSendQuery("Alexa");
+          }
+        }, 2200);
       }
     };
 
@@ -149,45 +201,64 @@ export default function App() {
       if (event.error !== 'no-speech') {
         console.warn('Speech recognition notice:', event.error);
       }
-      if (stateRef.current === 'LISTENING') {
-        wakeTriggeredRef.current = false;
-        setState('STANDBY');
+      if (stateRef.current === 'LISTENING' && !wakeTriggeredRef.current) {
+        updateState('STANDBY');
       }
     };
 
     recognition.onend = () => {
-      if (stateRef.current === 'LISTENING' && !wakeTriggeredRef.current) {
-        setState('STANDBY');
+      isRecognizingRef.current = false;
+      // Critical guard: never change state or restart if query is running or Alexa is speaking!
+      if (isQueryInProgressRef.current || isSpeakingRef.current || stateRef.current === 'THINKING') {
+        return;
       }
-      // Continuously restart passive wake-word listening so hands-free "Alexa" is always active
-      if (wakeWordActiveRef.current && !isSpeakingRef.current && stateRef.current !== 'THINKING') {
+
+      // Automatically maintain hands-free background listening if wake word is active
+      if (wakeWordActiveRef.current) {
         setTimeout(() => {
-          try {
-            recognition.start();
-          } catch (e) {}
-        }, 180);
+          if (!isRecognizingRef.current && !isQueryInProgressRef.current && !isSpeakingRef.current && stateRef.current !== 'THINKING') {
+            try {
+              recognition.start();
+            } catch (e) {}
+          }
+        }, 250);
       }
     };
 
     recognitionRef.current = recognition;
 
-    // Automatically start background listening on mount
-    if (wakeWordEnabled && !isSpeakingRef.current) {
+    // Start background listening
+    if (wakeWordEnabled && !isSpeakingRef.current && !isRecognizingRef.current) {
       try {
         recognition.start();
       } catch (e) {}
     }
 
-    // First interaction gesture fallback (for strict browser audio/mic policies)
-    const handleFirstTouch = () => {
-      if (wakeWordActiveRef.current && !isSpeakingRef.current && stateRef.current !== 'THINKING') {
-        try { recognition.start(); } catch (e) {}
+    // First user gesture listener to unlock audio & mic on browser autoplay/permissions policy
+    const handleFirstGesture = () => {
+      try {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) audioCtxRef.current = new AudioCtx();
+        }
+        if (audioCtxRef.current?.state === 'suspended') {
+          audioCtxRef.current.resume();
+        }
+      } catch (e) {}
+
+      if (wakeWordActiveRef.current && !isRecognizingRef.current && !isSpeakingRef.current && stateRef.current !== 'THINKING') {
+        try {
+          recognition.start();
+        } catch (e) {}
       }
     };
-    window.addEventListener('click', handleFirstTouch, { once: true });
+
+    window.addEventListener('click', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
 
     return () => {
-      window.removeEventListener('click', handleFirstTouch);
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
       try {
         recognition.stop();
       } catch (e) {}
@@ -196,7 +267,10 @@ export default function App() {
 
   // Text to Speech using browser SpeechSynthesis
   const speakText = (text) => {
-    if (!ttsEnabled || !window.speechSynthesis) return;
+    if (!ttsEnabled || !window.speechSynthesis) {
+      handleSpeechDone();
+      return;
+    }
     
     // Temporarily pause recognition while speaking to prevent self-triggering
     try {
@@ -219,17 +293,7 @@ export default function App() {
 
     utterance.onstart = () => {
       setIsSpeaking(true);
-    };
-
-    const handleSpeechDone = () => {
-      setIsSpeaking(false);
-      wakeTriggeredRef.current = false;
-      // Resume wake-word listening
-      if (wakeWordActiveRef.current && recognitionRef.current && stateRef.current !== 'THINKING') {
-        try {
-          recognitionRef.current.start();
-        } catch (e) {}
-      }
+      isSpeakingRef.current = true;
     };
 
     utterance.onend = handleSpeechDone;
@@ -238,22 +302,43 @@ export default function App() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const handleSpeechDone = () => {
+    setIsSpeaking(false);
+    isSpeakingRef.current = false;
+    isQueryInProgressRef.current = false;
+    wakeTriggeredRef.current = false;
+
+    // Safely resume wake-word listening after speech completes
+    if (wakeWordActiveRef.current && recognitionRef.current && stateRef.current !== 'THINKING') {
+      setTimeout(() => {
+        if (!isRecognizingRef.current && !isSpeakingRef.current && !isQueryInProgressRef.current && stateRef.current !== 'THINKING') {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {}
+        }
+      }, 350);
+    }
+  };
+
   const toggleMic = () => {
     if (state === 'LISTENING') {
+      clearTimeout(speechSilenceTimerRef.current);
+      wakeTriggeredRef.current = false;
+      updateState('STANDBY');
       try {
         recognitionRef.current?.stop();
       } catch (e) {}
-      wakeTriggeredRef.current = false;
-      setState('STANDBY');
     } else {
       playAlexaChime();
       wakeTriggeredRef.current = true;
-      setState('LISTENING');
+      updateState('LISTENING');
       if (recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-        } catch (e) {
-          console.warn('Mic start notice:', e);
+        if (!isRecognizingRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            console.warn('Mic start notice:', e);
+          }
         }
       } else {
         alert("Web Speech API is not supported in this browser. Please use Chrome/Edge or click a voice suggestion.");
@@ -265,14 +350,16 @@ export default function App() {
 
   // Progressive cognitive agent turn-taking dispatcher
   const handleSendQuery = async (queryText) => {
-    if (!queryText.trim()) return;
+    if (!queryText || !queryText.trim() || isQueryInProgressRef.current) return;
     
-    wakeTriggeredRef.current = false;
+    clearTimeout(speechSilenceTimerRef.current);
+    isQueryInProgressRef.current = true;
+    updateState('THINKING');
+    
     try {
       recognitionRef.current?.stop();
     } catch (e) {}
 
-    setState('THINKING');
     setUserTranscript(queryText);
     setToolTraces([]);
     setSpokenResponse("Querying AWS infrastructure & analyzing telemetry...");
@@ -284,6 +371,10 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: queryText })
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
 
       const data = await res.json();
       const rawTraces = data.tool_traces || [];
@@ -298,40 +389,47 @@ export default function App() {
         currentTraces.push(executingItem);
         setToolTraces([...currentTraces]);
         
-        await sleep(650);
+        await sleep(550);
 
         // Resolve to real output
         currentTraces[i] = item;
         setToolTraces([...currentTraces]);
-        await sleep(250);
+        await sleep(200);
       }
 
-      await sleep(350);
+      await sleep(250);
 
       setDisplayCard(data.display_card);
       setSpokenResponse(data.spoken_response);
-      setState(data.state || 'STANDBY');
+      const nextState = data.state || 'STANDBY';
+      updateState(nextState);
 
       speakText(data.spoken_response);
     } catch (err) {
       console.error('Error communicating with agent backend:', err);
       setSpokenResponse("Unable to reach CloudSentry MCP backend. Check server status on port 8000.");
-      setState('STANDBY');
+      updateState('STANDBY');
+      isQueryInProgressRef.current = false;
+      wakeTriggeredRef.current = false;
     }
   };
 
   const resetIncident = async () => {
     try {
+      clearTimeout(speechSilenceTimerRef.current);
+      isQueryInProgressRef.current = false;
+      wakeTriggeredRef.current = false;
       await fetch('/api/reset', { method: 'POST' });
       setUserTranscript('');
       setSpokenResponse("Incident scenario reset. Ready for demonstration.");
       setDisplayCard({
         title: "AWS CloudSentry Ready",
         badge: "STANDBY",
-        status_message: "Ready to triage AWS CloudWatch incidents."
+        badge_color: "blue",
+        status_message: "Wake phrase 'Alexa' is active. Say 'Alexa, what is failing in production?' to inspect CloudWatch alarms."
       });
       setToolTraces([]);
-      setState('STANDBY');
+      updateState('STANDBY');
     } catch (err) {
       console.error('Reset failed:', err);
     }
@@ -409,8 +507,19 @@ export default function App() {
           {/* "Alexa" Wake Word Toggle Pill */}
           <button
             onClick={() => {
-              setWakeWordEnabled(!wakeWordEnabled);
-              if (!wakeWordEnabled) playAlexaChime();
+              const next = !wakeWordEnabled;
+              setWakeWordEnabled(next);
+              wakeWordActiveRef.current = next;
+              if (next) {
+                playAlexaChime();
+                try {
+                  if (!isRecognizingRef.current) recognitionRef.current?.start();
+                } catch (e) {}
+              } else {
+                try {
+                  recognitionRef.current?.stop();
+                } catch (e) {}
+              }
             }}
             style={{
               display: 'flex',
@@ -632,7 +741,7 @@ export default function App() {
               />
             </div>
 
-            {/* Microphone Interaction Button */}
+              {/* Microphone Interaction Button */}
             <div style={{ width: '100%', marginTop: '0.5rem' }}>
               <button
                 onClick={toggleMic}
@@ -661,8 +770,8 @@ export default function App() {
                 {isListening ? <Radio size={18} color="#fff" style={{ animation: 'pulse-fast 1s infinite' }} /> : <Mic size={18} />}
                 <span>
                   {isListening 
-                    ? 'Listening... (Speak your command)' 
-                    : 'Tap to Speak into Alexa+'}
+                    ? 'Listening... (Speak to Alexa)' 
+                    : 'Tap to Speak (or say "Alexa")'}
                 </span>
               </button>
 
@@ -670,7 +779,10 @@ export default function App() {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (customInput.trim()) handleSendQuery(customInput);
+                  if (customInput.trim()) {
+                    playAlexaChime();
+                    handleSendQuery(customInput);
+                  }
                 }}
                 style={{
                   display: 'flex',
@@ -750,7 +862,10 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
               {/* Suggestion 1 */}
               <div
-                onClick={() => handleSendQuery("Alexa, what is failing in production?")}
+                onClick={() => {
+                  playAlexaChime();
+                  handleSendQuery("Alexa, what is failing in production?");
+                }}
                 className="voice-suggestion-card"
                 style={{
                   padding: '0.65rem 0.85rem',
@@ -773,7 +888,10 @@ export default function App() {
 
               {/* Suggestion 2 */}
               <div
-                onClick={() => handleSendQuery("Alexa, rollback checkout-api to revision 41")}
+                onClick={() => {
+                  playAlexaChime();
+                  handleSendQuery("Alexa, rollback checkout-api to revision 41");
+                }}
                 className="voice-suggestion-card"
                 style={{
                   padding: '0.65rem 0.85rem',
@@ -796,7 +914,10 @@ export default function App() {
 
               {/* Suggestion 3 */}
               <div
-                onClick={() => handleSendQuery("Alexa, confirm rollback")}
+                onClick={() => {
+                  playAlexaChime();
+                  handleSendQuery("Alexa, confirm rollback");
+                }}
                 className="voice-suggestion-card"
                 style={{
                   padding: '0.65rem 0.85rem',
