@@ -125,10 +125,10 @@ async def handle_voice_turn(req: VoiceQueryRequest):
     """
     raw_query = req.query.strip()
     
-    # Normalize and strip wake phrase if present ("Alexa", "Hey Alexa", "Alexa,", "Echo,")
-    cleaned_query = re.sub(r'^(hey\s+alexa|alexa|computer|echo)[,\s]*', '', raw_query, flags=re.IGNORECASE).strip().lower()
+    # Normalize and strip wake phrase if present ("Alexa", "Alex", "Hey Alex", "Hey Alexa", "Echo", etc.)
+    cleaned_query = re.sub(r'^(hey\s+)?(alexa|alex|alexis|alexia|computer|echo)[,\s]*', '', raw_query, flags=re.IGNORECASE).strip().lower()
 
-    # If the user only spoke the wake word ("Alexa" or "Hey Alexa"):
+    # If the user only spoke the wake word ("Alexa", "Alex", etc.):
     if not cleaned_query:
         return {
             "spoken_response": "Yes? I'm listening. What would you like me to check in AWS production?",
@@ -136,7 +136,7 @@ async def handle_voice_turn(req: VoiceQueryRequest):
                 "title": "Alexa+ Incident Commander Listening",
                 "badge": "WAKE PHRASE RECOGNIZED",
                 "badge_color": "blue",
-                "status_message": "Wake word 'Alexa' recognized. Say 'What is failing in production?' or request a service action."
+                "status_message": "Wake word recognized. Say 'What is failing in production?' or request a service action."
             },
             "state": "LISTENING",
             "tool_traces": []

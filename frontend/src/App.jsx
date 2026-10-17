@@ -146,10 +146,15 @@ export default function App() {
       const rawText = fullTranscript.trim();
       if (!rawText) return;
 
-      const hasAlexaWake = /\b(alexa|hey alexa|echo)\b/i.test(rawText);
+      const hasWakeWord = /\b(alexa|alex|alexis|alexia|hey alexa|hey alex|echo|computer)\b/i.test(rawText);
+
+      // Strip wake word to extract genuine command
+      const commandText = rawText
+        .replace(/^(hey\s+)?(alexa|alex|alexis|alexia|computer|echo)[,\s]*/i, '')
+        .trim();
 
       // 1. Wake phrase triggered
-      if (hasAlexaWake) {
+      if (hasWakeWord) {
         if (!wakeTriggeredRef.current) {
           wakeTriggeredRef.current = true;
           playAlexaChime();
@@ -170,30 +175,25 @@ export default function App() {
         }
       }
 
-      // 3. Command extraction after wake word
-      const commandText = rawText.replace(/^(hey\s+)?(alexa|echo)[,\s]*/i, '').trim();
+      // 3. Command extraction: Only dispatch if user has spoken an ACTUAL command, NOT just the wake word!
+      const isJustWakeWord = !commandText || /^(alexa|alex|alexis|alexia|echo|computer)$/i.test(commandText);
 
-      if (commandText.length > 2) {
-        // User spoke a meaningful request (e.g. "what is failing in production")
+      if (!isJustWakeWord && commandText.length >= 3) {
+        // User spoke an actual instruction after or with the wake word!
         clearTimeout(speechSilenceTimerRef.current);
+
+        // Debounced dispatch after speech pause
         speechSilenceTimerRef.current = setTimeout(() => {
-          if (!isQueryInProgressRef.current && (hasAlexaWake || stateRef.current === 'LISTENING')) {
+          if (!isQueryInProgressRef.current && (hasWakeWord || stateRef.current === 'LISTENING')) {
             handleSendQuery(rawText);
           }
-        }, 900);
+        }, 950);
 
-        if (hasFinal) {
+        // Immediate dispatch if speech engine marked this command final and it contains multiple words
+        if (hasFinal && commandText.split(/\s+/).length >= 2) {
           clearTimeout(speechSilenceTimerRef.current);
           handleSendQuery(rawText);
         }
-      } else if (hasAlexaWake && hasFinal) {
-        // Bare "Alexa" wake word spoken with no trailing request
-        clearTimeout(speechSilenceTimerRef.current);
-        speechSilenceTimerRef.current = setTimeout(() => {
-          if (!isQueryInProgressRef.current && stateRef.current === 'LISTENING') {
-            handleSendQuery("Alexa");
-          }
-        }, 2200);
       }
     };
 
