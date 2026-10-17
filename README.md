@@ -182,17 +182,7 @@ Open **`http://localhost:5173`** in Google Chrome or Microsoft Edge.
 
 ---
 
-## 👥 Hackathon Details & Collaborator Access
+## 📄 License
 
-* **Hackathon:** Build, Ship, Shape: Amazon Developer Hackathon 2026
-* **Track:** Alexa+
-* **Mini-Challenges:** AWS Builder + Open Source
-* **License:** [MIT License](./LICENSE)
-* **Amazon Developer Relations Reviewers:**
-  * `chris-trag`
-  * `knmeiss` (Kourtney Meiss)
-  * `giolaq` (Giovanni Laquidara)
-  * `anishamalde` (Anisha Malde)
-  * `mosesroth` (Moses Roth)
-  * `emersonsklar` (Emerson Sklar)
+This project is licensed under the [MIT License](./LICENSE).
 
