@@ -5,12 +5,14 @@ import {
   Smartphone, ChevronRight, Send, AlertTriangle, ShieldCheck, Zap
 } from 'lucide-react';
 import EchoRing from './components/EchoRing';
+import Echo3D from './components/Echo3D';
 import DisplayCard from './components/DisplayCard';
 import AgentHUD from './components/AgentHUD';
 import AudioWaveform from './components/AudioWaveform';
 
 export default function App() {
   const [state, setState] = useState('STANDBY'); // STANDBY, LISTENING, THINKING, INCIDENT_ACTIVE, AWAITING_CONFIRMATION, RESOLVED
+  const [echoMode, setEchoMode] = useState('3D'); // '3D' or '2D'
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [wakeWordEnabled, setWakeWordEnabled] = useState(true);
@@ -690,12 +692,43 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00d2ff' }} />
                 <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>
-                  Amazon Echo Ambient Unit
+                  Amazon Echo Unit
                 </span>
               </div>
-              <span style={{ fontSize: '0.68rem', color: '#64748b', fontFamily: 'JetBrains Mono' }}>
-                Echo 10 Pro
-              </span>
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', padding: '2px' }}>
+                <button
+                  onClick={() => setEchoMode('3D')}
+                  style={{
+                    background: echoMode === '3D' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
+                    color: echoMode === '3D' ? '#38bdf8' : '#94a3b8',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '0.65rem',
+                    fontWeight: '700',
+                    padding: '2px 7px',
+                    cursor: 'pointer'
+                  }}
+                  title="Switch to Interactive 3D Amazon Echo"
+                >
+                  3D Model
+                </button>
+                <button
+                  onClick={() => setEchoMode('2D')}
+                  style={{
+                    background: echoMode === '2D' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
+                    color: echoMode === '2D' ? '#38bdf8' : '#94a3b8',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '0.65rem',
+                    fontWeight: '700',
+                    padding: '2px 7px',
+                    cursor: 'pointer'
+                  }}
+                  title="Switch to 2D Light Ring"
+                >
+                  2D Ring
+                </button>
+              </div>
             </div>
 
             {/* Wake Word Recognition Flash Banner */}
@@ -722,14 +755,23 @@ export default function App() {
               </div>
             )}
 
-            {/* The Authentic Echo LED Light Ring */}
-            <div style={{ margin: '0.5rem 0' }}>
-              <EchoRing 
-                state={state}
-                isListening={isListening}
-                isSpeaking={isSpeaking}
-                onToggleMic={toggleMic}
-              />
+            {/* The Authentic Echo 3D Model or 2D LED Light Ring */}
+            <div style={{ margin: '0.2rem 0', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              {echoMode === '3D' ? (
+                <Echo3D 
+                  state={state}
+                  isListening={isListening}
+                  isSpeaking={isSpeaking}
+                  onToggleMic={toggleMic}
+                />
+              ) : (
+                <EchoRing 
+                  state={state}
+                  isListening={isListening}
+                  isSpeaking={isSpeaking}
+                  onToggleMic={toggleMic}
+                />
+              )}
             </div>
 
             {/* Live Audio Frequency Waveform */}
