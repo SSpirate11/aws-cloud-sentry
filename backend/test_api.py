@@ -53,15 +53,26 @@ def test_rollback_confirmation():
     assert "post_slack_notification" in tools
     print("✓ Turn 3 (Voice 2FA Execution) passed: Service restored & Slack notified")
 
+def test_alexa_wake_word():
+    # Test bare wake word "Alexa"
+    res = client.post("/api/voice-turn", json={"query": "Alexa"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["state"] == "LISTENING"
+    assert "Yes? I'm listening" in data["spoken_response"]
+    print("✓ Turn 0 (Bare 'Alexa' Wake Word) passed: Activated listening state")
+
 if __name__ == "__main__":
     print("========================================")
     print("Running CloudSentry Automated Test Suite")
     print("========================================")
     test_health()
+    test_alexa_wake_word()
     test_incident_triage_turn()
     test_rollback_safety_gate()
     test_rollback_confirmation()
     print("========================================")
-    print("ALL 4 END-TO-END TESTS PASSED (100% OK)!")
+    print("ALL 5 END-TO-END TESTS PASSED (100% OK)!")
     print("========================================")
+
 

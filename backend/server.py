@@ -8,7 +8,9 @@ Mounts both:
 
 import json
 import logging
+import re
 from typing import Dict, Any, List, Optional
+
 from pydantic import BaseModel
 
 from fastapi import FastAPI, Request
@@ -121,8 +123,28 @@ async def handle_voice_turn(req: VoiceQueryRequest):
     Interprets natural language voice query, executes MCP tools,
     and returns concise spoken voice output alongside rich visual screen data.
     """
-    user_query = req.query.strip().lower()
+    raw_query = req.query.strip()
+    
+    # Normalize and strip wake phrase if present ("Alexa", "Hey Alexa", "Alexa,", "Echo,")
+    cleaned_query = re.sub(r'^(hey\s+alexa|alexa|computer|echo)[,\s]*', '', raw_query, flags=re.IGNORECASE).strip().lower()
+
+    # If the user only spoke the wake word ("Alexa" or "Hey Alexa"):
+    if not cleaned_query:
+        return {
+            "spoken_response": "Yes? I'm listening. What would you like me to check in AWS production?",
+            "display_card": {
+                "title": "Alexa+ Incident Commander Listening",
+                "badge": "WAKE PHRASE RECOGNIZED",
+                "badge_color": "blue",
+                "status_message": "Wake word 'Alexa' recognized. Say 'What is failing in production?' or request a service action."
+            },
+            "state": "LISTENING",
+            "tool_traces": []
+        }
+
+    user_query = cleaned_query
     tool_traces = []
+
     
     # CASE 1: Voice Confirmation of Rollback ("Confirm", "Yes rollback", "Authorize")
     if (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Mic, MicOff, Volume2, VolumeX, RotateCcw, Shield, Cloud, Terminal, 
   CheckCircle2, AlertOctagon, Sparkles, Radio, Moon, Clock, Monitor, 
-  Smartphone, ChevronRight, Send, AlertTriangle, ShieldCheck
+  Smartphone, ChevronRight, Send, AlertTriangle, ShieldCheck, Zap
 } from 'lucide-react';
 import EchoRing from './components/EchoRing';
 import DisplayCard from './components/DisplayCard';
@@ -14,21 +14,50 @@ export default function App() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [wakeWordEnabled, setWakeWordEnabled] = useState(true);
+  const [wakeDetected, setWakeDetected] = useState(false);
   const [viewMode, setViewMode] = useState('DUAL'); // 'DUAL' or 'ECHO_SHOW'
   const [currentTime, setCurrentTime] = useState('03:15:00 AM');
   const [customInput, setCustomInput] = useState('');
   
   const [userTranscript, setUserTranscript] = useState('');
-  const [spokenResponse, setSpokenResponse] = useState("AWS CloudSentry initialized. Standing by for voice commands or CloudWatch alarms.");
+  const [spokenResponse, setSpokenResponse] = useState("AWS CloudSentry initialized. Say 'Alexa' or ask what is failing in production.");
   const [displayCard, setDisplayCard] = useState({
     title: "AWS CloudSentry Ready",
     badge: "STANDBY",
     badge_color: "blue",
-    status_message: "Say 'Alexa, what is failing in production?' to inspect active CloudWatch alarms."
+    status_message: "Wake phrase 'Alexa' is active. Say 'Alexa, what is failing in production?' to inspect CloudWatch alarms."
   });
   const [toolTraces, setToolTraces] = useState([]);
   
   const recognitionRef = useRef(null);
+  const isSpeakingRef = useRef(isSpeaking);
+  isSpeakingRef.current = isSpeaking;
+
+  // Authentic Amazon Echo dual-tone acoustic wake chime (G5 784Hz -> C6 1046Hz)
+  const playAlexaChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      const now = ctx.currentTime;
+      osc.frequency.setValueAtTime(784, now); // G5 note
+      osc.frequency.setValueAtTime(1046, now + 0.08); // C6 note
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } catch (e) {
+      // AudioContext may require user gesture on first interaction
+    }
+  };
 
   // Live 3 AM digital clock ticker
   useEffect(() => {
@@ -42,45 +71,98 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Setup Web Speech API for voice capture
+  // Web Speech API with "Alexa" Wake Phrase Detection
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
+    if (!SpeechRecognition) return;
 
-      recognition.onstart = () => {
-        setIsListening(true);
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      // Ignore audio if Alexa is currently speaking (prevents echo self-triggering)
+      if (isSpeakingRef.current) return;
+
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      const heardText = (finalTranscript || interimTranscript).trim();
+
+      // Spot "Alexa" or "Hey Alexa" wake phrase
+      if (/\b(alexa|hey alexa|echo)\b/i.test(heardText)) {
+        playAlexaChime();
+        setWakeDetected(true);
         setState('LISTENING');
-      };
+        setTimeout(() => setWakeDetected(false), 2500);
+      }
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setUserTranscript(transcript);
-        setIsListening(false);
-        handleSendQuery(transcript);
-      };
+      if (finalTranscript.trim()) {
+        const text = finalTranscript.trim();
+        // If wake word is enabled, process when it mentions Alexa, or when awaiting follow-up confirmation
+        const mentionsAlexa = /\b(alexa|hey alexa)\b/i.test(text);
+        
+        if (mentionsAlexa || state === 'AWAITING_CONFIRMATION' || state === 'LISTENING') {
+          setUserTranscript(text);
+          handleSendQuery(text);
+        }
+      }
+    };
 
-      recognition.onerror = (event) => {
-        console.warn('Speech recognition error:', event.error);
-        setIsListening(false);
-        setState('STANDBY');
-      };
+    recognition.onerror = (event) => {
+      if (event.error !== 'no-speech') {
+        console.warn('Speech recognition notice:', event.error);
+      }
+    };
 
-      recognition.onend = () => {
-        setIsListening(false);
-      };
+    recognition.onend = () => {
+      setIsListening(false);
+      // Restart passive wake-word listening if enabled and Alexa isn't speaking
+      if (wakeWordEnabled && !isSpeakingRef.current) {
+        try {
+          recognition.start();
+          setIsListening(true);
+        } catch (e) {}
+      }
+    };
 
-      recognitionRef.current = recognition;
+    recognitionRef.current = recognition;
+
+    if (wakeWordEnabled && !isSpeakingRef.current) {
+      try {
+        recognition.start();
+      } catch (e) {}
     }
-  }, []);
+
+    return () => {
+      try {
+        recognition.stop();
+      } catch (e) {}
+    };
+  }, [wakeWordEnabled]);
 
   // Text to Speech using browser SpeechSynthesis
   const speakText = (text) => {
     if (!ttsEnabled || !window.speechSynthesis) return;
     
+    // Temporarily pause recognition while speaking to prevent self-triggering
+    try {
+      recognitionRef.current?.stop();
+    } catch (e) {}
+
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
@@ -95,23 +177,41 @@ export default function App() {
     );
     if (preferredVoice) utterance.voice = preferredVoice;
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+    };
+
+    const handleSpeechDone = () => {
+      setIsSpeaking(false);
+      // Resume wake-word listening
+      if (wakeWordEnabled && recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+          setIsListening(true);
+        } catch (e) {}
+      }
+    };
+
+    utterance.onend = handleSpeechDone;
+    utterance.onerror = handleSpeechDone;
 
     window.speechSynthesis.speak(utterance);
   };
 
   const toggleMic = () => {
     if (isListening) {
-      recognitionRef.current?.stop();
+      try {
+        recognitionRef.current?.stop();
+      } catch (e) {}
       setIsListening(false);
     } else {
       if (recognitionRef.current) {
         try {
+          playAlexaChime();
           recognitionRef.current.start();
+          setIsListening(true);
         } catch (e) {
-          console.warn('Mic start failed:', e);
+          console.warn('Mic start notice:', e);
         }
       } else {
         alert("Web Speech API is not supported in this browser. Please use Chrome/Edge or click a voice suggestion.");
@@ -256,8 +356,44 @@ export default function App() {
           </div>
         </div>
 
-        {/* Right: View Mode Toggle, Audio Toggle, Incident Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        {/* Right: Wake Word Toggle, View Mode, Audio Toggle, Status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          
+          {/* "Alexa" Wake Word Toggle Pill */}
+          <button
+            onClick={() => {
+              setWakeWordEnabled(!wakeWordEnabled);
+              if (!wakeWordEnabled) playAlexaChime();
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '9999px',
+              background: wakeWordEnabled ? 'rgba(0, 210, 255, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+              border: `1px solid ${wakeWordEnabled ? 'rgba(0, 210, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
+              color: wakeWordEnabled ? '#00d2ff' : '#94a3b8',
+              fontSize: '0.72rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            title="Toggle Hands-Free 'Alexa' Wake Word Detection"
+          >
+            <Radio size={13} color={wakeWordEnabled ? '#00d2ff' : '#64748b'} />
+            <span>Wake Word: "Alexa"</span>
+            <span style={{
+              fontSize: '0.62rem',
+              padding: '0.1rem 0.35rem',
+              borderRadius: '4px',
+              background: wakeWordEnabled ? 'rgba(0, 210, 255, 0.25)' : 'rgba(255,255,255,0.08)',
+              color: wakeWordEnabled ? '#e0f2fe' : '#94a3b8'
+            }}>
+              {wakeWordEnabled ? 'LISTENING' : 'OFF'}
+            </span>
+          </button>
+
           {/* Active Incident Warning Indicator */}
           <div style={{
             display: 'flex',
@@ -362,7 +498,7 @@ export default function App() {
             title="Toggle Alexa Speech Synthesis"
           >
             {ttsEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
-            <span>{ttsEnabled ? 'Alexa Voice' : 'Muted'}</span>
+            <span>{ttsEnabled ? 'Voice ON' : 'Muted'}</span>
           </button>
         </div>
       </header>
@@ -406,6 +542,30 @@ export default function App() {
               </span>
             </div>
 
+            {/* Wake Word Recognition Flash Banner */}
+            {wakeDetected && (
+              <div style={{
+                position: 'absolute',
+                top: '12px',
+                zIndex: 10,
+                padding: '0.3rem 0.85rem',
+                borderRadius: '9999px',
+                background: 'rgba(0, 210, 255, 0.25)',
+                border: '1px solid rgba(0, 210, 255, 0.6)',
+                color: '#00d2ff',
+                fontSize: '0.74rem',
+                fontWeight: '800',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 0 20px rgba(0, 210, 255, 0.5)',
+                animation: 'pulse-fast 0.8s infinite'
+              }}>
+                <Zap size={13} fill="#00d2ff" />
+                <span>"Alexa" Wake Word Recognized</span>
+              </div>
+            )}
+
             {/* The Authentic Echo LED Light Ring */}
             <div style={{ margin: '0.5rem 0' }}>
               <EchoRing 
@@ -434,25 +594,29 @@ export default function App() {
                   padding: '0.75rem 1rem',
                   borderRadius: '12px',
                   background: isListening 
-                    ? 'linear-gradient(135deg, #f43f5e, #dc2626)' 
-                    : 'linear-gradient(135deg, #00d2ff, #0066ff)',
+                    ? 'linear-gradient(135deg, #00d2ff, #0066ff)' 
+                    : 'linear-gradient(135deg, #1e293b, #0f172a)',
                   color: '#fff',
                   fontWeight: '700',
                   fontSize: '0.85rem',
-                  border: 'none',
+                  border: isListening ? 'none' : '1px solid rgba(255,255,255,0.1)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.5rem',
                   boxShadow: isListening 
-                    ? '0 0 25px rgba(244, 63, 94, 0.45)' 
-                    : '0 0 25px rgba(0, 210, 255, 0.35)',
+                    ? '0 0 25px rgba(0, 210, 255, 0.4)' 
+                    : 'none',
                   transition: 'all 0.2s ease'
                 }}
               >
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-                <span>{isListening ? 'Listening (Click to Stop)' : 'Click to Speak into Alexa+'}</span>
+                {isListening ? <Radio size={18} color="#fff" style={{ animation: 'pulse-fast 1s infinite' }} /> : <Mic size={18} />}
+                <span>
+                  {isListening 
+                    ? (wakeWordEnabled ? 'Listening for "Alexa"...' : 'Mic Active (Click to Mute)') 
+                    : 'Click to Enable Microphone'}
+                </span>
               </button>
 
               {/* Custom Speech / Text Input Bar */}
@@ -474,7 +638,7 @@ export default function App() {
               >
                 <input
                   type="text"
-                  placeholder="Or type voice command..."
+                  placeholder='Say "Alexa..." or type voice query'
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
                   style={{
@@ -514,7 +678,7 @@ export default function App() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#64748b' }}>
-                Alexa Suggested Voice Prompts
+                Try Saying with Wake Phrase "Alexa"
               </div>
               <button
                 onClick={resetIncident}
@@ -562,7 +726,7 @@ export default function App() {
 
               {/* Suggestion 2 */}
               <div
-                onClick={() => handleSendQuery("Rollback checkout-api to revision 41")}
+                onClick={() => handleSendQuery("Alexa, rollback checkout-api to revision 41")}
                 className="voice-suggestion-card"
                 style={{
                   padding: '0.65rem 0.85rem',
@@ -574,7 +738,7 @@ export default function App() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#fcd34d' }}>
-                    "Rollback checkout-api to revision 41"
+                    "Alexa, rollback checkout-api to revision 41"
                   </div>
                   <ChevronRight size={14} color="#fcd34d" />
                 </div>
@@ -585,7 +749,7 @@ export default function App() {
 
               {/* Suggestion 3 */}
               <div
-                onClick={() => handleSendQuery("Confirm rollback")}
+                onClick={() => handleSendQuery("Alexa, confirm rollback")}
                 className="voice-suggestion-card"
                 style={{
                   padding: '0.65rem 0.85rem',
@@ -597,7 +761,7 @@ export default function App() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#6ee7b7' }}>
-                    "Confirm rollback"
+                    "Alexa, confirm rollback"
                   </div>
                   <ChevronRight size={14} color="#6ee7b7" />
                 </div>
