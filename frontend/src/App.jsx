@@ -1064,7 +1064,7 @@ export default function App() {
 
           {/* Model Context Protocol (MCP) Live Agent Trace HUD (Only in DUAL view) */}
           {viewMode === 'DUAL' && (
-            <AgentHUD toolTraces={toolTraces} />
+            <AgentHUD toolTraces={toolTraces} state={state} />
           )}
 
         </div>

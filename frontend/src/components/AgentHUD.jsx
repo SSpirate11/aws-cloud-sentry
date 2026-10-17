@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Terminal, ChevronDown, ChevronUp, Layers, CheckCircle2, AlertTriangle, Code2, Cpu, ArrowUpRight, Copy } from 'lucide-react';
+import FlowPipeline from './FlowPipeline';
 
-export default function AgentHUD({ toolTraces }) {
+export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [copiedIdx, setCopiedIdx] = useState(null);
 
@@ -87,6 +88,9 @@ export default function AgentHUD({ toolTraces }) {
       {/* Trace Items List */}
       {isExpanded && (
         <div style={{ padding: '0.85rem 1rem', background: 'rgba(4, 7, 15, 0.4)' }}>
+          {/* Visual Architecture & Interaction Flow Pipeline */}
+          <FlowPipeline toolTraces={toolTraces} state={state} />
+
           {(!toolTraces || toolTraces.length === 0) ? (
             <div style={{ color: '#64748b', fontSize: '0.78rem', fontStyle: 'italic', padding: '0.75rem', textAlign: 'center' }}>
               Standing by. Ask Alexa or select a voice prompt to monitor real-time Model Context Protocol execution.
