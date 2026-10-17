@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Terminal, ChevronDown, ChevronUp, Layers, CheckCircle2, AlertTriangle, Code2, Cpu, ArrowUpRight, Copy } from 'lucide-react';
+import { Terminal, ChevronDown, ChevronUp, Layers, CheckCircle2, AlertTriangle, Code2, Cpu, ArrowUpRight, Copy, Activity, Workflow } from 'lucide-react';
 import FlowPipeline from './FlowPipeline';
+import LiveFlowchart from './LiveFlowchart';
 
 export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [viewType, setViewType] = useState('FLOWCHART'); // 'FLOWCHART' or 'CARDS'
   const [copiedIdx, setCopiedIdx] = useState(null);
 
   const handleCopy = (trace, idx) => {
@@ -69,7 +71,54 @@ export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          {/* Flow Diagram View Toggle */}
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', padding: '2px' }}
+          >
+            <button
+              onClick={() => setViewType('FLOWCHART')}
+              style={{
+                background: viewType === 'FLOWCHART' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
+                color: viewType === 'FLOWCHART' ? '#38bdf8' : '#94a3b8',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '0.65rem',
+                fontWeight: '700',
+                padding: '2px 7px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Interactive Live Flowchart DAG"
+            >
+              <Workflow size={11} />
+              <span>Flowchart</span>
+            </button>
+            <button
+              onClick={() => setViewType('CARDS')}
+              style={{
+                background: viewType === 'CARDS' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
+                color: viewType === 'CARDS' ? '#38bdf8' : '#94a3b8',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '0.65rem',
+                fontWeight: '700',
+                padding: '2px 7px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Compact Node Cards"
+            >
+              <Layers size={11} />
+              <span>Cards</span>
+            </button>
+          </div>
+
           <span style={{
             fontSize: '0.72rem',
             padding: '0.2rem 0.55rem',
@@ -88,8 +137,12 @@ export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
       {/* Trace Items List */}
       {isExpanded && (
         <div style={{ padding: '0.85rem 1rem', background: 'rgba(4, 7, 15, 0.4)' }}>
-          {/* Visual Architecture & Interaction Flow Pipeline */}
-          <FlowPipeline toolTraces={toolTraces} state={state} />
+          {/* Visual Architecture & Interaction Flow */}
+          {viewType === 'FLOWCHART' ? (
+            <LiveFlowchart toolTraces={toolTraces} state={state} />
+          ) : (
+            <FlowPipeline toolTraces={toolTraces} state={state} />
+          )}
 
           {(!toolTraces || toolTraces.length === 0) ? (
             <div style={{ color: '#64748b', fontSize: '0.78rem', fontStyle: 'italic', padding: '0.75rem', textAlign: 'center' }}>

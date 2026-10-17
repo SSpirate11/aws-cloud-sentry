@@ -344,3 +344,19 @@ code, pre {
   transform: scale(0.98);
 }
 
+/* ==========================================================================
+   LIVE ARCHITECTURE FLOWCHART ANIMATIONS
+   ========================================================================== */
+@keyframes flowDash {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.flow-line-active {
+  animation: flowDash 0.8s linear infinite;
+}
+

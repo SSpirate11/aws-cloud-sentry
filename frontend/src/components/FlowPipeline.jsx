@@ -210,3 +210,4 @@ export default function FlowPipeline({ toolTraces = [], state = 'STANDBY' }) {
     </div>
   );
 }
+
