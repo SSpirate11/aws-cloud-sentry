@@ -17,8 +17,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: #070a11;
   color: #f1f5f9;
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  overflow: hidden;
 }
 
 code, pre {
@@ -301,31 +301,31 @@ code, pre {
 .echo-show-chassis {
   position: relative;
   background: #090e18;
-  border-radius: 28px;
-  padding: 16px;
+  border-radius: 18px;
+  padding: 8px 10px;
   box-shadow: 
-    0 25px 70px -15px rgba(0, 0, 0, 0.8),
+    0 20px 50px -10px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.08),
     inset 0 1px 1px rgba(255, 255, 255, 0.12),
     inset 0 -2px 4px rgba(0, 0, 0, 0.6);
-  transition: all 0.4s ease;
+  transition: all 0.3s ease;
 }
 
 /* Front-facing Echo camera pinhole */
 .echo-camera-pinhole {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #020408;
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: inset 0 0 3px rgba(0, 210, 255, 0.3);
-  margin: 0 auto 10px auto;
+  margin: 0 auto 6px auto;
 }
 
 /* Echo Show Screen Bezel */
 .echo-screen-container {
   background: #060911;
-  border-radius: 18px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;

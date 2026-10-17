@@ -353,11 +353,11 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
         ref={containerRef}
         onClick={onToggleMic}
         style={{
-          width: '280px',
-          height: '280px',
+          width: '180px',
+          height: '180px',
           cursor: isInteracting ? 'grabbing' : 'grab',
           position: 'relative',
-          borderRadius: '20px',
+          borderRadius: '16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -369,27 +369,27 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
       {/* Interactive Helper Hint */}
       <div style={{
         position: 'absolute',
-        top: '6px',
-        right: '12px',
-        fontSize: '0.62rem',
+        top: '4px',
+        right: '8px',
+        fontSize: '0.58rem',
         color: '#64748b',
-        background: 'rgba(15, 23, 42, 0.6)',
-        padding: '2px 8px',
+        background: 'rgba(15, 23, 42, 0.7)',
+        padding: '1px 6px',
         borderRadius: '9999px',
         pointerEvents: 'none',
         border: '1px solid rgba(255, 255, 255, 0.06)'
       }}>
-        3D Interactive • Drag to rotate
+        3D Drag
       </div>
 
       {/* Status indicator badge */}
       <div style={{
-        marginTop: '0.4rem',
-        padding: '0.4rem 1rem',
+        marginTop: '0.25rem',
+        padding: '0.2rem 0.65rem',
         borderRadius: '9999px',
-        fontSize: '0.8rem',
+        fontSize: '0.72rem',
         fontWeight: '600',
-        letterSpacing: '0.025em',
+        letterSpacing: '0.02em',
         backgroundColor: state === 'AWAITING_CONFIRMATION' 
           ? 'rgba(255, 153, 0, 0.15)' 
           : state === 'RESOLVED' 
@@ -421,16 +421,16 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
           : '#38bdf8',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.45rem',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+        gap: '0.35rem',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
       }}>
         <span style={{
-          width: '7px',
-          height: '7px',
+          width: '6px',
+          height: '6px',
           borderRadius: '50%',
           backgroundColor: 'currentColor',
           display: 'inline-block',
-          boxShadow: '0 0 8px currentColor'
+          boxShadow: '0 0 6px currentColor'
         }}></span>
         {getStatusLabel()}
       </div>

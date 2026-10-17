@@ -45,11 +45,11 @@ export default function MetricChart({ state, currentRev }) {
   const points = activeTab === 'latency' ? latencyPoints : memoryPoints;
   const maxVal = activeTab === 'latency' ? 5200 : 100;
   
-  // SVG coordinates calculation (width: 480, height: 120)
+  // SVG coordinates calculation (width: 480, height: 85)
   const svgWidth = 480;
-  const svgHeight = 120;
+  const svgHeight = 85;
   const paddingX = 35;
-  const paddingY = 15;
+  const paddingY = 10;
 
   const getX = (idx) => paddingX + (idx / (points.length - 1)) * (svgWidth - 2 * paddingX);
   const getY = (val) => svgHeight - paddingY - (val / maxVal) * (svgHeight - 2 * paddingY);
@@ -74,50 +74,50 @@ export default function MetricChart({ state, currentRev }) {
   return (
     <div style={{
       background: 'rgba(8, 12, 22, 0.9)',
-      borderRadius: '12px',
+      borderRadius: '10px',
       border: '1px solid rgba(255, 255, 255, 0.07)',
-      padding: '0.85rem 1rem',
-      marginTop: '1rem',
+      padding: '0.45rem 0.75rem',
+      marginTop: '0.4rem',
       boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
     }}>
       {/* Chart Header & Tab Toggles */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', fontWeight: '700' }}>
-            AWS CloudWatch Real-Time Telemetry
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: '700' }}>
+            CloudWatch Real-Time
           </span>
           <span style={{
-            fontSize: '0.65rem',
-            padding: '0.1rem 0.4rem',
+            fontSize: '0.6rem',
+            padding: '1px 4px',
             borderRadius: '3px',
             background: isResolved ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
             color: isResolved ? '#34d399' : '#fb7185',
             fontWeight: '600'
           }}>
-            {isResolved ? 'STATUS: HEALTHY' : 'STATUS: BREACHED'}
+            {isResolved ? 'HEALTHY' : 'BREACHED'}
           </span>
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '2px' }}>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', padding: '1px' }}>
           <button
             onClick={() => setActiveTab('latency')}
             style={{
               background: activeTab === 'latency' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'latency' ? '#f8fafc' : '#94a3b8',
               border: 'none',
-              padding: '0.2rem 0.6rem',
-              borderRadius: '4px',
-              fontSize: '0.7rem',
+              padding: '0.15rem 0.45rem',
+              borderRadius: '3px',
+              fontSize: '0.65rem',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.3rem'
+              gap: '0.25rem'
             }}
           >
-            <Activity size={12} color={activeTab === 'latency' ? strokeColor : '#94a3b8'} />
-            <span>Target Response Time</span>
+            <Activity size={11} color={activeTab === 'latency' ? strokeColor : '#94a3b8'} />
+            <span>Latency SLA</span>
           </button>
           <button
             onClick={() => setActiveTab('memory')}
@@ -125,46 +125,46 @@ export default function MetricChart({ state, currentRev }) {
               background: activeTab === 'memory' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'memory' ? '#f8fafc' : '#94a3b8',
               border: 'none',
-              padding: '0.2rem 0.6rem',
-              borderRadius: '4px',
-              fontSize: '0.7rem',
+              padding: '0.15rem 0.45rem',
+              borderRadius: '3px',
+              fontSize: '0.65rem',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.3rem'
+              gap: '0.25rem'
             }}
           >
-            <HardDrive size={12} color={activeTab === 'memory' ? strokeColor : '#94a3b8'} />
+            <HardDrive size={11} color={activeTab === 'memory' ? strokeColor : '#94a3b8'} />
             <span>Memory Util</span>
           </button>
         </div>
       </div>
 
       {/* Primary Metric Number & Delta */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.5rem' }}>
-        <div style={{ fontSize: '1.4rem', fontWeight: '800', color: strokeColor, fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', marginBottom: '0.25rem' }}>
+        <div style={{ fontSize: '1.2rem', fontWeight: '800', color: strokeColor, fontFamily: 'JetBrains Mono, monospace' }}>
           {activeTab === 'latency' 
             ? (isResolved ? '45 ms' : '4,850 ms') 
             : (isResolved ? '36.2 %' : '98.4 %')}
         </div>
-        <div style={{ fontSize: '0.75rem', color: isResolved ? '#34d399' : '#fb7185', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+        <div style={{ fontSize: '0.7rem', color: isResolved ? '#34d399' : '#fb7185', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
           {isResolved ? (
             <>
-              <TrendingDown size={14} />
-              <span>-99.1% recovery post-rollback</span>
+              <TrendingDown size={12} />
+              <span>-99.1% post-rollback</span>
             </>
           ) : (
             <>
-              <AlertTriangle size={14} />
-              <span>+10,700% above 500ms p99 SLA threshold</span>
+              <AlertTriangle size={12} />
+              <span>+10,700% p99 SLA breach</span>
             </>
           )}
         </div>
       </div>
 
       {/* SVG Sparkline Graph */}
-      <div style={{ position: 'relative', width: '100%', height: '110px' }}>
+      <div style={{ position: 'relative', width: '100%', height: '80px' }}>
         <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">

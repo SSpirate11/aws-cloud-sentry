@@ -438,44 +438,54 @@ export default function App() {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.25rem 1rem', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      width: '100vw',
+      height: '100vh',
+      maxHeight: '100vh',
+      overflow: 'hidden',
+      boxSizing: 'border-box',
+      padding: '0.4rem 0.65rem',
+      display: 'flex', 
+      flexDirection: 'column',
+      background: '#070a11'
+    }}>
       
       {/* Top Ambient Nightstand & Operational Status Bar */}
       <header className="glass-panel" style={{
-        borderRadius: '16px',
-        padding: '0.75rem 1.25rem',
+        borderRadius: '10px',
+        padding: '0.35rem 0.75rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        marginBottom: '1.25rem',
-        border: '1px solid rgba(255, 255, 255, 0.08)'
+        gap: '0.6rem',
+        marginBottom: '0.4rem',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        flexShrink: 0
       }}>
         {/* Left: 3 AM Bedside Clock & Emergency On-Call Badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '9px',
+              width: '28px',
+              height: '28px',
+              borderRadius: '7px',
               background: 'linear-gradient(135deg, #00d2ff, #0055ff)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 15px rgba(0, 210, 255, 0.35)'
+              boxShadow: '0 0 12px rgba(0, 210, 255, 0.35)'
             }}>
-              <Shield size={20} color="#fff" />
+              <Shield size={16} color="#fff" />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <span style={{ fontSize: '1.05rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#f8fafc' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ fontSize: '0.92rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#f8fafc' }}>
                   CloudSentry
                 </span>
                 <span style={{
-                  fontSize: '0.65rem',
-                  padding: '0.1rem 0.4rem',
-                  borderRadius: '4px',
+                  fontSize: '0.58rem',
+                  padding: '1px 4px',
+                  borderRadius: '3px',
                   background: 'rgba(0, 210, 255, 0.15)',
                   color: '#38bdf8',
                   fontWeight: '700'
@@ -483,28 +493,28 @@ export default function App() {
                   Alexa+
                 </span>
               </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
+              <div style={{ fontSize: '0.62rem', color: '#64748b', lineHeight: '1' }}>
                 Voice Incident Commander for AWS SREs
               </div>
             </div>
           </div>
 
-          <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)' }} />
+          <div style={{ height: '18px', width: '1px', background: 'rgba(255,255,255,0.1)' }} />
 
           {/* Realistic 3 AM Bedside Clock */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <Moon size={14} color="#f59e0b" />
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', fontWeight: '700', color: '#f8fafc' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Moon size={12} color="#f59e0b" />
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: '700', color: '#f8fafc' }}>
               {currentTime}
             </span>
-            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+            <span style={{ fontSize: '0.62rem', color: '#64748b' }}>
               • Bedside Stand
             </span>
           </div>
         </div>
 
         {/* Right: Wake Word Toggle, View Mode, Audio Toggle, Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           
           {/* "Alexa" Wake Word Toggle Pill */}
           <button
@@ -526,25 +536,25 @@ export default function App() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.35rem 0.75rem',
+              gap: '0.35rem',
+              padding: '0.25rem 0.55rem',
               borderRadius: '9999px',
               background: wakeWordEnabled ? 'rgba(0, 210, 255, 0.12)' : 'rgba(255, 255, 255, 0.05)',
               border: `1px solid ${wakeWordEnabled ? 'rgba(0, 210, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
               color: wakeWordEnabled ? '#00d2ff' : '#94a3b8',
-              fontSize: '0.72rem',
+              fontSize: '0.68rem',
               fontWeight: '700',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
             title="Toggle Hands-Free Voice Control"
           >
-            <Radio size={13} color={wakeWordEnabled ? '#00d2ff' : '#64748b'} />
+            <Radio size={11} color={wakeWordEnabled ? '#00d2ff' : '#64748b'} />
             <span>Hands-Free Mic</span>
             <span style={{
-              fontSize: '0.62rem',
-              padding: '0.1rem 0.35rem',
-              borderRadius: '4px',
+              fontSize: '0.55rem',
+              padding: '1px 3px',
+              borderRadius: '3px',
               background: wakeWordEnabled ? 'rgba(0, 210, 255, 0.25)' : 'rgba(255,255,255,0.08)',
               color: wakeWordEnabled ? '#e0f2fe' : '#94a3b8'
             }}>
@@ -556,8 +566,8 @@ export default function App() {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.3rem 0.7rem',
+            gap: '0.35rem',
+            padding: '0.25rem 0.55rem',
             borderRadius: '9999px',
             background: state === 'RESOLVED' 
               ? 'rgba(16, 185, 129, 0.15)' 
@@ -571,20 +581,20 @@ export default function App() {
                 ? 'rgba(245, 158, 11, 0.3)'
                 : 'rgba(244, 63, 94, 0.3)'
             }`,
-            fontSize: '0.72rem',
+            fontSize: '0.68rem',
             color: state === 'RESOLVED' ? '#34d399' : state === 'AWAITING_CONFIRMATION' ? '#fbbf24' : '#fb7185',
             fontWeight: '600'
           }}>
             <span style={{
-              width: '7px',
-              height: '7px',
+              width: '6px',
+              height: '6px',
               borderRadius: '50%',
               background: 'currentColor',
-              boxShadow: '0 0 6px currentColor'
+              boxShadow: '0 0 5px currentColor'
             }} />
             <span>
               {state === 'RESOLVED' 
-                ? 'All CloudWatch Alarms OK' 
+                ? 'All Alarms OK' 
                 : state === 'AWAITING_CONFIRMATION'
                 ? 'Pending Voice 2FA Rollback'
                 : 'Sev-2 Page: checkout-api High Latency'}
@@ -592,25 +602,25 @@ export default function App() {
           </div>
 
           {/* View Mode Toggle */}
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '2px' }}>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '1px' }}>
             <button
               onClick={() => setViewMode('DUAL')}
               style={{
                 background: viewMode === 'DUAL' ? 'rgba(0, 210, 255, 0.2)' : 'transparent',
                 color: viewMode === 'DUAL' ? '#38bdf8' : '#94a3b8',
                 border: 'none',
-                padding: '0.25rem 0.6rem',
-                borderRadius: '6px',
-                fontSize: '0.72rem',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.68rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.3rem'
+                gap: '0.25rem'
               }}
               title="Dual Screen: Echo Show + SRE Inspector"
             >
-              <Monitor size={13} />
+              <Monitor size={11} />
               <span>SRE Console</span>
             </button>
             <button
@@ -619,18 +629,18 @@ export default function App() {
                 background: viewMode === 'ECHO_SHOW' ? 'rgba(0, 210, 255, 0.2)' : 'transparent',
                 color: viewMode === 'ECHO_SHOW' ? '#38bdf8' : '#94a3b8',
                 border: 'none',
-                padding: '0.25rem 0.6rem',
-                borderRadius: '6px',
-                fontSize: '0.72rem',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.68rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.3rem'
+                gap: '0.25rem'
               }}
               title="Echo Show 10 Smart Display Focus"
             >
-              <Smartphone size={13} />
+              <Smartphone size={11} />
               <span>Echo Show Only</span>
             </button>
           </div>
@@ -645,17 +655,17 @@ export default function App() {
               background: ttsEnabled ? 'rgba(0, 210, 255, 0.12)' : 'rgba(255,255,255,0.06)',
               border: `1px solid ${ttsEnabled ? 'rgba(0,210,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
               color: ttsEnabled ? '#38bdf8' : '#94a3b8',
-              borderRadius: '8px',
-              padding: '0.35rem 0.65rem',
+              borderRadius: '6px',
+              padding: '0.25rem 0.5rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: '0.72rem'
+              gap: '0.25rem',
+              fontSize: '0.68rem'
             }}
             title="Toggle Alexa Speech Synthesis"
           >
-            {ttsEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            {ttsEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
             <span>{ttsEnabled ? 'Voice ON' : 'Muted'}</span>
           </button>
         </div>
@@ -664,53 +674,57 @@ export default function App() {
       {/* Main Layout Area */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: viewMode === 'DUAL' ? 'minmax(320px, 1fr) minmax(420px, 1.8fr)' : '1fr',
+        gridTemplateColumns: viewMode === 'DUAL' 
+          ? '280px minmax(360px, 1.2fr) minmax(380px, 1.3fr)' 
+          : '1fr',
         maxWidth: viewMode === 'ECHO_SHOW' ? '820px' : '100%',
         margin: viewMode === 'ECHO_SHOW' ? '0 auto' : '0',
         width: '100%',
-        gap: '1.25rem',
-        flex: 1
+        gap: '0.55rem',
+        flex: 1,
+        overflow: 'hidden',
+        minHeight: 0
       }}>
         
         {/* Left Column: Ambient Echo Device & Voice Suggestions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', height: '100%', overflow: 'hidden' }}>
           
           {/* Echo Device Hardware Card */}
           <div className="glass-panel" style={{
-            borderRadius: '20px',
-            padding: '1.5rem 1.25rem',
+            borderRadius: '14px',
+            padding: '0.65rem 0.75rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'space-between',
             position: 'relative',
             background: 'linear-gradient(180deg, rgba(14, 21, 38, 0.85) 0%, rgba(9, 13, 24, 0.95) 100%)',
-            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)'
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
+            flexShrink: 0
           }}>
             {/* Top Device Header: Ambient Nightstand Acoustic Base */}
-            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00d2ff' }} />
-                <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#00d2ff' }} />
+                <span style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
                   Amazon Echo Unit
                 </span>
               </div>
-              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', padding: '2px' }}>
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '5px', padding: '1px' }}>
                 <button
                   onClick={() => setEchoMode('3D')}
                   style={{
                     background: echoMode === '3D' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
                     color: echoMode === '3D' ? '#38bdf8' : '#94a3b8',
                     border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '0.65rem',
+                    borderRadius: '3px',
+                    fontSize: '0.62rem',
                     fontWeight: '700',
-                    padding: '2px 7px',
+                    padding: '2px 6px',
                     cursor: 'pointer'
                   }}
                   title="Switch to Interactive 3D Amazon Echo"
                 >
-                  3D Model
+                  3D
                 </button>
                 <button
                   onClick={() => setEchoMode('2D')}
@@ -718,22 +732,21 @@ export default function App() {
                     background: echoMode === '2D' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
                     color: echoMode === '2D' ? '#38bdf8' : '#94a3b8',
                     border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '0.65rem',
+                    borderRadius: '3px',
+                    fontSize: '0.62rem',
                     fontWeight: '700',
-                    padding: '2px 7px',
+                    padding: '2px 6px',
                     cursor: 'pointer'
                   }}
                   title="Switch to 2D Light Ring"
                 >
-                  2D Ring
+                  2D
                 </button>
               </div>
             </div>
 
-
             {/* The Authentic Echo 3D Model or 2D LED Light Ring */}
-            <div style={{ margin: '0.2rem 0', width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ margin: '0.1rem 0', width: '100%', display: 'flex', justifyContent: 'center' }}>
               {echoMode === '3D' ? (
                 <Echo3D 
                   state={state}
@@ -752,7 +765,7 @@ export default function App() {
             </div>
 
             {/* Live Audio Frequency Waveform */}
-            <div style={{ width: '100%', margin: '0.4rem 0' }}>
+            <div style={{ width: '100%', margin: '0.2rem 0' }}>
               <AudioWaveform 
                 isActive={isListening} 
                 isSpeaking={isSpeaking} 
@@ -760,33 +773,33 @@ export default function App() {
               />
             </div>
 
-              {/* Microphone Interaction Button */}
-            <div style={{ width: '100%', marginTop: '0.5rem' }}>
+            {/* Microphone Interaction Button */}
+            <div style={{ width: '100%', marginTop: '0.25rem' }}>
               <button
                 onClick={toggleMic}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '12px',
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: '9px',
                   background: isListening 
                     ? 'linear-gradient(135deg, #00d2ff, #0066ff)' 
                     : 'linear-gradient(135deg, #1e293b, #0f172a)',
                   color: '#fff',
                   fontWeight: '700',
-                  fontSize: '0.85rem',
+                  fontSize: '0.78rem',
                   border: isListening ? 'none' : '1px solid rgba(255,255,255,0.1)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.5rem',
+                  gap: '0.4rem',
                   boxShadow: isListening 
-                    ? '0 0 25px rgba(0, 210, 255, 0.4)' 
+                    ? '0 0 20px rgba(0, 210, 255, 0.4)' 
                     : 'none',
                   transition: 'all 0.2s ease'
                 }}
               >
-                {isListening ? <Radio size={18} color="#fff" style={{ animation: 'pulse-fast 1s infinite' }} /> : <Mic size={18} />}
+                {isListening ? <Radio size={14} color="#fff" style={{ animation: 'pulse-fast 1s infinite' }} /> : <Mic size={14} />}
                 <span>
                   {isListening 
                     ? 'Listening... (Speak to Alexa)' 
@@ -806,17 +819,17 @@ export default function App() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  marginTop: '0.65rem',
+                  gap: '0.35rem',
+                  marginTop: '0.35rem',
                   background: 'rgba(5, 8, 16, 0.6)',
-                  borderRadius: '10px',
-                  padding: '0.35rem 0.5rem',
+                  borderRadius: '8px',
+                  padding: '0.25rem 0.45rem',
                   border: '1px solid rgba(255, 255, 255, 0.08)'
                 }}
               >
                 <input
                   type="text"
-                  placeholder='Say "Alexa..." or type voice query'
+                  placeholder='Say "Alexa..." or type query'
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
                   style={{
@@ -824,9 +837,9 @@ export default function App() {
                     border: 'none',
                     outline: 'none',
                     color: '#f8fafc',
-                    fontSize: '0.78rem',
+                    fontSize: '0.72rem',
                     flex: 1,
-                    padding: '0.2rem 0.4rem'
+                    padding: '0.1rem 0.2rem'
                   }}
                 />
                 <button
@@ -835,14 +848,14 @@ export default function App() {
                     background: 'rgba(0, 210, 255, 0.15)',
                     border: '1px solid rgba(0, 210, 255, 0.3)',
                     color: '#38bdf8',
-                    borderRadius: '6px',
-                    padding: '0.3rem 0.5rem',
+                    borderRadius: '5px',
+                    padding: '0.2rem 0.4rem',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center'
                   }}
                 >
-                  <Send size={13} />
+                  <Send size={11} />
                 </button>
               </form>
             </div>
@@ -850,13 +863,18 @@ export default function App() {
 
           {/* Organic Alexa Suggested Voice Prompts */}
           <div className="glass-panel" style={{
-            borderRadius: '16px',
-            padding: '1.15rem',
-            background: 'rgba(11, 16, 30, 0.75)'
+            borderRadius: '12px',
+            padding: '0.55rem 0.75rem',
+            background: 'rgba(11, 16, 30, 0.75)',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#64748b' }}>
-                Recommended Voice Commands
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <div style={{ fontSize: '0.66rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
+                Recommended Commands
               </div>
               <button
                 onClick={resetIncident}
@@ -864,21 +882,21 @@ export default function App() {
                   background: 'transparent',
                   border: 'none',
                   color: '#64748b',
-                  fontSize: '0.7rem',
+                  fontSize: '0.64rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.3rem',
-                  padding: '2px 4px'
+                  gap: '0.25rem',
+                  padding: '1px 3px'
                 }}
                 title="Reset simulation to initial state"
               >
-                <RotateCcw size={11} />
-                <span>Reset Demo</span>
+                <RotateCcw size={10} />
+                <span>Reset</span>
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, justifyContent: 'space-around' }}>
               {/* Suggestion 1 */}
               <div
                 onClick={() => {
@@ -887,21 +905,21 @@ export default function App() {
                 }}
                 className="voice-suggestion-card"
                 style={{
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: '10px',
+                  padding: '0.4rem 0.6rem',
+                  borderRadius: '7px',
                   background: 'rgba(244, 63, 94, 0.08)',
                   border: '1px solid rgba(244, 63, 94, 0.22)',
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#fca5a5' }}>
-                    "Alexa, what is failing in production?"
+                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#fca5a5' }}>
+                    "Alexa, what is failing?"
                   </div>
-                  <ChevronRight size={14} color="#fca5a5" />
+                  <ChevronRight size={12} color="#fca5a5" />
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.15rem' }}>
-                  Triage 3 AM CloudWatch alarm & inspect dying ECS containers
+                <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '1px' }}>
+                  Triage 3 AM CloudWatch alarm
                 </div>
               </div>
 
@@ -913,21 +931,21 @@ export default function App() {
                 }}
                 className="voice-suggestion-card"
                 style={{
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: '10px',
+                  padding: '0.4rem 0.6rem',
+                  borderRadius: '7px',
                   background: 'rgba(245, 158, 11, 0.08)',
                   border: '1px solid rgba(245, 158, 11, 0.22)',
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#fcd34d' }}>
-                    "Alexa, rollback checkout-api to revision 41"
+                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#fcd34d' }}>
+                    "Alexa, rollback checkout-api"
                   </div>
-                  <ChevronRight size={14} color="#fcd34d" />
+                  <ChevronRight size={12} color="#fcd34d" />
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.15rem' }}>
-                  Triggers Voice 2FA safety gate before destructive mutation
+                <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '1px' }}>
+                  Triggers Voice 2FA safety gate
                 </div>
               </div>
 
@@ -939,58 +957,72 @@ export default function App() {
                 }}
                 className="voice-suggestion-card"
                 style={{
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: '10px',
+                  padding: '0.4rem 0.6rem',
+                  borderRadius: '7px',
                   background: 'rgba(16, 185, 129, 0.08)',
                   border: '1px solid rgba(16, 185, 129, 0.22)',
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#6ee7b7' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#6ee7b7' }}>
                     "Alexa, confirm rollback"
                   </div>
-                  <ChevronRight size={14} color="#6ee7b7" />
+                  <ChevronRight size={12} color="#6ee7b7" />
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.15rem' }}>
-                  Authorizes mutation, restores service & notifies Slack
+                <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '1px' }}>
+                  Authorizes mutation & alerts Slack
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Authentic Echo Show Screen & Live MCP Inspector */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Center Column: Authentic Echo Show Screen */}
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
           
           {/* Echo Show 10 Physical Hardware Bezel Shell */}
-          <div className="echo-show-chassis">
+          <div className="echo-show-chassis" style={{
+            padding: '8px 10px',
+            borderRadius: '16px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
             {/* Front Camera Pinhole */}
-            <div className="echo-camera-pinhole" />
+            <div className="echo-camera-pinhole" style={{ margin: '0 auto 6px auto', width: '6px', height: '6px' }} />
 
             {/* Echo Show Screen Inner Display */}
-            <div className="echo-screen-container" style={{ padding: '1.25rem' }}>
+            <div className="echo-screen-container" style={{
+              padding: '0.65rem 0.8rem',
+              flex: 1,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.4rem'
+            }}>
               
               {/* Echo Show Top Bar */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                paddingBottom: '0.75rem',
+                paddingBottom: '0.35rem',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-                marginBottom: '1rem'
+                flexShrink: 0
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: '800', fontFamily: 'JetBrains Mono', color: '#94a3b8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.74rem', fontWeight: '800', fontFamily: 'JetBrains Mono', color: '#94a3b8' }}>
                     {currentTime.slice(0, 5)} AM
                   </span>
-                  <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                  <span style={{ fontSize: '0.65rem', color: '#64748b' }}>
                     • Seattle • 48° Mist
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: '#00d2ff' }}>
-                  <Sparkles size={12} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.65rem', color: '#00d2ff' }}>
+                  <Sparkles size={11} />
                   <span>Alexa+ Ambient SRE Mode</span>
                 </div>
               </div>
@@ -998,18 +1030,18 @@ export default function App() {
               {/* User Voice Utterance Bubble (If Spoken) */}
               {userTranscript && (
                 <div style={{
-                  marginBottom: '0.85rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '10px',
+                  padding: '0.35rem 0.65rem',
+                  borderRadius: '7px',
                   background: 'rgba(0, 210, 255, 0.08)',
                   borderLeft: '3px solid #00d2ff',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.65rem'
+                  gap: '0.45rem',
+                  flexShrink: 0
                 }}>
                   <div style={{
-                    width: '28px',
-                    height: '28px',
+                    width: '20px',
+                    height: '20px',
                     borderRadius: '50%',
                     background: 'rgba(0, 210, 255, 0.15)',
                     display: 'flex',
@@ -1017,73 +1049,76 @@ export default function App() {
                     justifyContent: 'center',
                     flexShrink: 0
                   }}>
-                    <Mic size={14} color="#00d2ff" />
+                    <Mic size={11} color="#00d2ff" />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', fontWeight: '700' }}>
-                      You asked:
-                    </div>
-                    <div style={{ fontSize: '0.92rem', color: '#f1f5f9', fontWeight: '600' }}>
+                    <span style={{ fontSize: '0.58rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: '700', marginRight: '6px' }}>
+                      Spoken:
+                    </span>
+                    <span style={{ fontSize: '0.8rem', color: '#f1f5f9', fontWeight: '600' }}>
                       "{userTranscript}"
-                    </div>
+                    </span>
                   </div>
                 </div>
               )}
 
               {/* Alexa+ Spoken Audio Response Output Card */}
               <div style={{
-                borderRadius: '12px',
-                padding: '1rem 1.15rem',
+                borderRadius: '9px',
+                padding: '0.55rem 0.75rem',
                 background: 'linear-gradient(135deg, rgba(16, 24, 44, 0.95), rgba(8, 12, 24, 0.9))',
                 border: '1px solid rgba(0, 210, 255, 0.25)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-                marginBottom: '1rem'
+                boxShadow: '0 3px 14px rgba(0, 0, 0, 0.3)',
+                flexShrink: 0
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#00d2ff', fontSize: '0.75rem', fontWeight: '700' }}>
-                    <Sparkles size={14} /> Alexa+ Voice Response:
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#00d2ff', fontSize: '0.7rem', fontWeight: '700' }}>
+                    <Sparkles size={12} /> Alexa+ Voice Response:
                   </div>
                   {isSpeaking && (
-                    <div style={{ fontSize: '0.7rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <Volume2 size={13} style={{ animation: 'pulse-fast 1s infinite' }} />
-                      <span>Speaking via SpeechSynthesis...</span>
+                    <div style={{ fontSize: '0.65rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <Volume2 size={11} style={{ animation: 'pulse-fast 1s infinite' }} />
+                      <span>Speaking...</span>
                     </div>
                   )}
                 </div>
 
-                <div style={{ fontSize: '1rem', lineHeight: '1.5', color: '#ffffff', fontWeight: '400' }}>
+                <div style={{ fontSize: '0.84rem', lineHeight: '1.4', color: '#ffffff', fontWeight: '400' }}>
                   {spokenResponse}
                 </div>
               </div>
 
               {/* Echo Show Visual Card (Telemetry, Diagnostics, Voice 2FA) */}
-              <DisplayCard card={displayCard} state={state} />
+              <div style={{ flex: 1 }}>
+                <DisplayCard card={displayCard} state={state} />
+              </div>
 
             </div>
           </div>
-
-          {/* Model Context Protocol (MCP) Live Agent Trace HUD (Only in DUAL view) */}
-          {viewMode === 'DUAL' && (
-            <AgentHUD toolTraces={toolTraces} state={state} />
-          )}
-
         </div>
+
+        {/* Right Column: Model Context Protocol (MCP) Live Agent Trace HUD (Only in DUAL view) */}
+        {viewMode === 'DUAL' && (
+          <div style={{ height: '100%', overflow: 'hidden' }}>
+            <AgentHUD toolTraces={toolTraces} state={state} />
+          </div>
+        )}
+
       </div>
 
       {/* Production SRE Footer */}
       <footer style={{
-        marginTop: '2rem',
-        paddingTop: '1rem',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        height: '20px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '0.75rem',
-        fontSize: '0.75rem',
-        color: '#64748b'
+        paddingTop: '2px',
+        fontSize: '0.66rem',
+        color: '#64748b',
+        flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span><strong>AWS CloudSentry Enterprise Incident Commander</strong></span>
           <span>•</span>
           <span style={{ color: '#00d2ff' }}>Model Context Protocol v2.3</span>
@@ -1091,8 +1126,8 @@ export default function App() {
           <span style={{ color: '#10b981' }}>CloudWatch & ECS Operational</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{ padding: '0.1rem 0.4rem', borderRadius: '3px', background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>
             Streamable HTTP
           </span>
           <span>us-east-1 Production</span>

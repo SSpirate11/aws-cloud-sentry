@@ -33,7 +33,7 @@ export default function EchoRing({ state, isListening, isSpeaking, onToggleMic }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.25rem 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.4rem 0' }}>
       
       {/* Authentic Amazon Echo Light Ring Assembly */}
       <div 
@@ -55,17 +55,17 @@ export default function EchoRing({ state, isListening, isSpeaking, onToggleMic }
           {/* Center Alexa Glyph / Status Icon */}
           <div style={{ position: 'relative', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {isSpeaking ? (
-              <Volume2 size={40} color="#38bdf8" style={{ filter: 'drop-shadow(0 0 10px #38bdf8)' }} />
+              <Volume2 size={36} color="#38bdf8" style={{ filter: 'drop-shadow(0 0 10px #38bdf8)' }} />
             ) : state === 'THINKING' ? (
-              <Sparkles size={40} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 12px #00d2ff)', animation: 'spin-glow 2s infinite linear' }} />
+              <Sparkles size={36} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 12px #00d2ff)', animation: 'spin-glow 2s infinite linear' }} />
             ) : state === 'LISTENING' ? (
-              <Radio size={40} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 10px #00d2ff)', animation: 'pulse-fast 1s infinite' }} />
+              <Radio size={36} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 10px #00d2ff)', animation: 'pulse-fast 1s infinite' }} />
             ) : state === 'AWAITING_CONFIRMATION' ? (
-              <ShieldAlert size={40} color="#ffb700" style={{ filter: 'drop-shadow(0 0 12px #ff9900)' }} />
+              <ShieldAlert size={36} color="#ffb700" style={{ filter: 'drop-shadow(0 0 12px #ff9900)' }} />
             ) : state === 'RESOLVED' ? (
-              <CheckCircle size={40} color="#00e676" style={{ filter: 'drop-shadow(0 0 12px #00e676)' }} />
+              <CheckCircle size={36} color="#00e676" style={{ filter: 'drop-shadow(0 0 12px #00e676)' }} />
             ) : (
-              <Mic size={38} color="#94a3b8" />
+              <Mic size={34} color="#94a3b8" />
             )}
           </div>
         </div>
@@ -73,12 +73,12 @@ export default function EchoRing({ state, isListening, isSpeaking, onToggleMic }
 
       {/* Status indicator badge */}
       <div style={{
-        marginTop: '1.4rem',
-        padding: '0.45rem 1.1rem',
+        marginTop: '0.45rem',
+        padding: '0.2rem 0.65rem',
         borderRadius: '9999px',
-        fontSize: '0.85rem',
+        fontSize: '0.72rem',
         fontWeight: '600',
-        letterSpacing: '0.025em',
+        letterSpacing: '0.02em',
         backgroundColor: state === 'AWAITING_CONFIRMATION' 
           ? 'rgba(255, 153, 0, 0.15)' 
           : state === 'RESOLVED' 
