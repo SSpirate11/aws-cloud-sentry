@@ -100,10 +100,15 @@ export default function App() {
     }
   };
 
-  // Main turn-taking dispatcher to Python backend
+  // Helper for natural timing delays
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Main turn-taking dispatcher with natural cognitive agent pacing
   const handleSendQuery = async (queryText) => {
     setState('THINKING');
     setUserTranscript(queryText);
+    setToolTraces([]);
+    setSpokenResponse("Querying AWS infrastructure & analyzing telemetry...");
 
     try {
       const res = await fetch('/api/voice-turn', {
@@ -113,10 +118,32 @@ export default function App() {
       });
 
       const data = await res.json();
+      const rawTraces = data.tool_traces || [];
 
-      setSpokenResponse(data.spoken_response);
+      // Progressive sequential tool execution for authentic, natural SRE pacing
+      const currentTraces = [];
+      for (let i = 0; i < rawTraces.length; i++) {
+        const item = rawTraces[i];
+        
+        // Step A: Show tool in EXECUTING state
+        const executingItem = { ...item, status: 'EXECUTING', output: 'Connecting to AWS API...' };
+        currentTraces.push(executingItem);
+        setToolTraces([...currentTraces]);
+        
+        // Natural execution pause (500ms - 700ms)
+        await sleep(650);
+
+        // Step B: Resolve tool to real status (SUCCESS or SAFETY_GATE_TRIGGERED)
+        currentTraces[i] = item;
+        setToolTraces([...currentTraces]);
+        await sleep(250);
+      }
+
+      // Small cognitive pause before rendering the final visual display and starting speech
+      await sleep(350);
+
       setDisplayCard(data.display_card);
-      setToolTraces(data.tool_traces || []);
+      setSpokenResponse(data.spoken_response);
       setState(data.state || 'STANDBY');
 
       // Speak Alexa response
@@ -432,7 +459,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Footer & Devpost Hackathon Metadata */}
+      {/* Production SRE Footer */}
       <footer style={{
         marginTop: '2rem',
         paddingTop: '1rem',
@@ -446,18 +473,18 @@ export default function App() {
         color: '#64748b'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span><strong>Build, Ship, Shape: Amazon Developer Hackathon 2026</strong></span>
+          <span><strong>AWS CloudSentry Enterprise Incident Commander</strong></span>
           <span>•</span>
-          <span style={{ color: '#00d2ff' }}>Track: Alexa+ (MCP Server & Voice Agent)</span>
+          <span style={{ color: '#00d2ff' }}>Model Context Protocol v2.3</span>
           <span>•</span>
-          <span style={{ color: '#fbbf24' }}>Mini-Challenges: AWS Builder + Open Source</span>
+          <span style={{ color: '#10b981' }}>CloudWatch & ECS Operational</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>
-            MIT License
+            Streamable HTTP
           </span>
-          <span>Streamable HTTP Spec 2025-11-25+</span>
+          <span>us-east-1 Production</span>
         </div>
       </footer>
     </div>

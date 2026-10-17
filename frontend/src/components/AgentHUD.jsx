@@ -59,43 +59,44 @@ export default function AgentHUD({ toolTraces }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {toolTraces.map((trace, idx) => {
                 const isSafety = trace.status === 'SAFETY_GATE_TRIGGERED';
-                const isSuccess = trace.status === 'SUCCESS';
-                
-                return (
-                  <div 
-                    key={idx}
-                    style={{
-                      background: 'rgba(15, 23, 42, 0.7)',
-                      borderRadius: '8px',
-                      padding: '0.75rem',
-                      border: `1px solid ${isSafety ? 'rgba(245, 158, 11, 0.3)' : 'rgba(255, 255, 255, 0.05)'}`,
-                      fontFamily: 'JetBrains Mono, monospace'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>#{idx + 1}</span>
-                        <Code2 size={14} color="#00d2ff" />
-                        <span style={{ color: '#38bdf8', fontWeight: '600', fontSize: '0.85rem' }}>
-                          {trace.tool}
-                        </span>
-                      </div>
+                      const isExecuting = trace.status === 'EXECUTING';
+                      
+                      return (
+                        <div 
+                          key={idx}
+                          style={{
+                            background: 'rgba(15, 23, 42, 0.7)',
+                            borderRadius: '8px',
+                            padding: '0.75rem',
+                            border: `1px solid ${isExecuting ? 'rgba(0, 210, 255, 0.4)' : isSafety ? 'rgba(245, 158, 11, 0.3)' : 'rgba(255, 255, 255, 0.05)'}`,
+                            fontFamily: 'JetBrains Mono, monospace'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>#{idx + 1}</span>
+                              <Code2 size={14} color="#00d2ff" />
+                              <span style={{ color: '#38bdf8', fontWeight: '600', fontSize: '0.85rem' }}>
+                                {trace.tool}
+                              </span>
+                            </div>
 
-                      <div style={{
-                        fontSize: '0.7rem',
-                        fontWeight: '600',
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '4px',
-                        background: isSafety ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                        color: isSafety ? '#fbbf24' : '#34d399',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem'
-                      }}>
-                        {isSafety ? <AlertTriangle size={12} /> : <CheckCircle size={12} />}
-                        {trace.status}
-                      </div>
-                    </div>
+                            <div style={{
+                              fontSize: '0.7rem',
+                              fontWeight: '600',
+                              padding: '0.15rem 0.5rem',
+                              borderRadius: '4px',
+                              background: isExecuting ? 'rgba(0, 210, 255, 0.18)' : isSafety ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                              color: isExecuting ? '#38bdf8' : isSafety ? '#fbbf24' : '#34d399',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              animation: isExecuting ? 'pulse-fast 1s infinite' : 'none'
+                            }}>
+                              {isExecuting ? <Layers size={12} style={{ animation: 'spin-glow 1.5s infinite linear' }} /> : isSafety ? <AlertTriangle size={12} /> : <CheckCircle size={12} />}
+                              {isExecuting ? 'EXECUTING...' : trace.status}
+                            </div>
+                          </div>
 
                     {/* Parameters Preview */}
                     {trace.parameters && Object.keys(trace.parameters).length > 0 && (
