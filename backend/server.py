@@ -83,6 +83,24 @@ def post_slack_notification(channel: str, message: str) -> str:
     res = aws_tools.post_slack_notification(channel, message)
     return json.dumps(res, indent=2)
 
+@mcp.tool(
+    name="propose_code_fix",
+    description="Use AWS Bedrock (Claude 3.5 Sonnet) to synthesize an authoritative git diff hotfix addressing the root cause."
+)
+def propose_code_fix(service: str = "checkout-api", root_cause: Optional[str] = None) -> str:
+    """Synthesizes a clean Unified Git Diff patch for the root cause."""
+    res = aws_tools.propose_code_fix(service=service, root_cause=root_cause)
+    return json.dumps(res, indent=2)
+
+@mcp.tool(
+    name="generate_incident_postmortem",
+    description="Generates a comprehensive blameless SRE Post-Mortem report (markdown) with timeline, MTTA, MTTR, root cause, and action items."
+)
+def generate_incident_postmortem(incident_id: str = "INC-84920") -> str:
+    """Generates an authoritative blameless SRE post-mortem report."""
+    res = aws_tools.generate_incident_postmortem(incident_id=incident_id)
+    return json.dumps(res, indent=2)
+
 
 # 2. Initialize FastAPI Application
 app = FastAPI(
@@ -213,7 +231,79 @@ async def handle_voice_turn(req: VoiceQueryRequest):
             "tool_traces": tool_traces
         }
 
-    # CASE 2: Request Rollback ("Roll back checkout-api to revision 41", "Rollback service")
+    # CASE 2: Propose Automated Code Fix / Hotfix ("Alexa, propose code fix", "Fix the bug", "Patch")
+    if any(k in user_query for k in ["code fix", "propose fix", "patch", "hotfix", "code patch", "permanent fix", "fix bug", "propose a fix", "root cause fix"]):
+        service = "checkout-api"
+        tool_traces.append({
+            "tool": "propose_code_fix",
+            "parameters": {"service": service},
+            "status": "SUCCESS"
+        })
+        fix_res = aws_tools.propose_code_fix(service=service)
+        tool_traces[-1]["output"] = fix_res
+
+        spoken = (
+            f"I've synthesized a production hotfix for {service} using AWS Bedrock Claude 3.5 Sonnet. "
+            "The patch replaces unbounded memory accumulation with bounded chunking, preventing OOMKill exit 137. "
+            "A draft pull request branch fix/checkout-api-oom-stream-buffer is ready for review."
+        )
+
+        return {
+            "spoken_response": spoken,
+            "display_card": {
+                "title": f"Automated Hotfix: {service}",
+                "badge": "PR DRAFT READY",
+                "badge_color": "cyan",
+                "service": service,
+                "branch": fix_res["branch"],
+                "target_file": fix_res["target_file"],
+                "git_patch": fix_res["git_patch"],
+                "explanation": fix_res["explanation"],
+                "estimated_memory_reduction": fix_res["estimated_memory_reduction"],
+                "pr_url": fix_res["pr_url"],
+                "status_message": "Unified Git diff patch synthesized via AWS Bedrock (Claude 3.5 Sonnet)."
+            },
+            "state": "CODE_FIX_READY",
+            "tool_traces": tool_traces
+        }
+
+    # CASE 3: Generate SRE Post-Mortem Report ("Alexa, generate post-mortem", "Incident report", "RCA")
+    if any(k in user_query for k in ["postmortem", "post-mortem", "post mortem", "incident report", "rca report", "rca summary", "generate report", "incident postmortem"]):
+        incident_id = SESSION_CONTEXT.get("current_incident", "INC-84920")
+        tool_traces.append({
+            "tool": "generate_incident_postmortem",
+            "parameters": {"incident_id": incident_id},
+            "status": "SUCCESS"
+        })
+        pm_res = aws_tools.generate_incident_postmortem(incident_id=incident_id)
+        tool_traces[-1]["output"] = pm_res
+
+        spoken = (
+            f"I've generated the blameless SRE post-mortem for incident {incident_id}. "
+            f"Mean time to acknowledge was {pm_res['mtta']}, and mean time to remediate was {pm_res['mttr']}. "
+            "The report has been archived to S3 and posted to the incident Slack channel."
+        )
+
+        return {
+            "spoken_response": spoken,
+            "display_card": {
+                "title": f"Blameless SRE Post-Mortem: {incident_id}",
+                "badge": "PUBLISHED",
+                "badge_color": "indigo",
+                "incident_id": incident_id,
+                "mtta": pm_res["mtta"],
+                "mttr": pm_res["mttr"],
+                "impact": pm_res["impact"],
+                "postmortem_markdown": pm_res["postmortem_markdown"],
+                "s3_report_url": pm_res["s3_report_url"],
+                "slack_broadcast": pm_res["slack_broadcast"],
+                "status_message": "Post-mortem generated, archived to S3, and broadcast to Slack."
+            },
+            "state": "POSTMORTEM_GENERATED",
+            "tool_traces": tool_traces
+        }
+
+    # CASE 4: Request Rollback ("Roll back checkout-api to revision 41", "Rollback service")
     if "roll" in user_query or "revert" in user_query:
         # Determine service and revision
         service = "checkout-api"

@@ -569,20 +569,30 @@ export default function App() {
             gap: '0.35rem',
             padding: '0.25rem 0.55rem',
             borderRadius: '9999px',
-            background: state === 'RESOLVED' 
+            background: (state === 'RESOLVED' || state === 'CODE_FIX_READY' || state === 'POSTMORTEM_GENERATED')
               ? 'rgba(16, 185, 129, 0.15)' 
               : state === 'AWAITING_CONFIRMATION'
               ? 'rgba(245, 158, 11, 0.15)'
+              : state === 'STANDBY'
+              ? 'rgba(0, 210, 255, 0.15)'
               : 'rgba(244, 63, 94, 0.15)',
             border: `1px solid ${
-              state === 'RESOLVED' 
+              (state === 'RESOLVED' || state === 'CODE_FIX_READY' || state === 'POSTMORTEM_GENERATED')
                 ? 'rgba(16, 185, 129, 0.3)' 
                 : state === 'AWAITING_CONFIRMATION'
                 ? 'rgba(245, 158, 11, 0.3)'
+                : state === 'STANDBY'
+                ? 'rgba(0, 210, 255, 0.3)'
                 : 'rgba(244, 63, 94, 0.3)'
             }`,
             fontSize: '0.68rem',
-            color: state === 'RESOLVED' ? '#34d399' : state === 'AWAITING_CONFIRMATION' ? '#fbbf24' : '#fb7185',
+            color: (state === 'RESOLVED' || state === 'CODE_FIX_READY' || state === 'POSTMORTEM_GENERATED') 
+              ? '#34d399' 
+              : state === 'AWAITING_CONFIRMATION' 
+              ? '#fbbf24' 
+              : state === 'STANDBY'
+              ? '#38bdf8'
+              : '#fb7185',
             fontWeight: '600'
           }}>
             <span style={{
@@ -593,10 +603,16 @@ export default function App() {
               boxShadow: '0 0 5px currentColor'
             }} />
             <span>
-              {state === 'RESOLVED' 
-                ? 'All Alarms OK' 
+              {state === 'CODE_FIX_READY'
+                ? 'PR Draft Ready • fix/checkout-api'
+                : state === 'POSTMORTEM_GENERATED'
+                ? 'Post-Mortem Published • S3 & Slack'
+                : state === 'RESOLVED' 
+                ? 'All Alarms OK • Service Restored' 
                 : state === 'AWAITING_CONFIRMATION'
                 ? 'Pending Voice 2FA Rollback'
+                : state === 'STANDBY'
+                ? 'Standby • Ready for Alerts'
                 : 'Sev-2 Page: checkout-api High Latency'}
             </span>
           </div>
@@ -896,8 +912,8 @@ export default function App() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, justifyContent: 'space-around' }}>
-              {/* Suggestion 1 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, overflowY: 'auto', paddingRight: '2px' }}>
+              {/* Suggestion 1: Triage */}
               <div
                 onClick={() => {
                   playAlexaChime();
@@ -905,7 +921,7 @@ export default function App() {
                 }}
                 className="voice-suggestion-card"
                 style={{
-                  padding: '0.4rem 0.6rem',
+                  padding: '0.3rem 0.55rem',
                   borderRadius: '7px',
                   background: 'rgba(244, 63, 94, 0.08)',
                   border: '1px solid rgba(244, 63, 94, 0.22)',
@@ -913,17 +929,17 @@ export default function App() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#fca5a5' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#fca5a5' }}>
                     "Alexa, what is failing?"
                   </div>
-                  <ChevronRight size={12} color="#fca5a5" />
+                  <ChevronRight size={11} color="#fca5a5" />
                 </div>
-                <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '1px' }}>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
                   Triage 3 AM CloudWatch alarm
                 </div>
               </div>
 
-              {/* Suggestion 2 */}
+              {/* Suggestion 2: Rollback Gate */}
               <div
                 onClick={() => {
                   playAlexaChime();
@@ -931,7 +947,7 @@ export default function App() {
                 }}
                 className="voice-suggestion-card"
                 style={{
-                  padding: '0.4rem 0.6rem',
+                  padding: '0.3rem 0.55rem',
                   borderRadius: '7px',
                   background: 'rgba(245, 158, 11, 0.08)',
                   border: '1px solid rgba(245, 158, 11, 0.22)',
@@ -939,17 +955,17 @@ export default function App() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#fcd34d' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#fcd34d' }}>
                     "Alexa, rollback checkout-api"
                   </div>
-                  <ChevronRight size={12} color="#fcd34d" />
+                  <ChevronRight size={11} color="#fcd34d" />
                 </div>
-                <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '1px' }}>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
                   Triggers Voice 2FA safety gate
                 </div>
               </div>
 
-              {/* Suggestion 3 */}
+              {/* Suggestion 3: Confirm 2FA */}
               <div
                 onClick={() => {
                   playAlexaChime();
@@ -957,7 +973,7 @@ export default function App() {
                 }}
                 className="voice-suggestion-card"
                 style={{
-                  padding: '0.4rem 0.6rem',
+                  padding: '0.3rem 0.55rem',
                   borderRadius: '7px',
                   background: 'rgba(16, 185, 129, 0.08)',
                   border: '1px solid rgba(16, 185, 129, 0.22)',
@@ -965,13 +981,65 @@ export default function App() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#6ee7b7' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#6ee7b7' }}>
                     "Alexa, confirm rollback"
                   </div>
-                  <ChevronRight size={12} color="#6ee7b7" />
+                  <ChevronRight size={11} color="#6ee7b7" />
                 </div>
-                <div style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: '1px' }}>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
                   Authorizes mutation & alerts Slack
+                </div>
+              </div>
+
+              {/* Suggestion 4: Propose Code Fix (New MCP Tool) */}
+              <div
+                onClick={() => {
+                  playAlexaChime();
+                  handleSendQuery("Alexa, propose code fix");
+                }}
+                className="voice-suggestion-card"
+                style={{
+                  padding: '0.3rem 0.55rem',
+                  borderRadius: '7px',
+                  background: 'rgba(0, 210, 255, 0.08)',
+                  border: '1px solid rgba(0, 210, 255, 0.25)',
+                  cursor: 'pointer'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#38bdf8' }}>
+                    "Alexa, propose code fix"
+                  </div>
+                  <ChevronRight size={11} color="#38bdf8" />
+                </div>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
+                  Bedrock Claude 3.5 Git patch & PR
+                </div>
+              </div>
+
+              {/* Suggestion 5: Generate Post-Mortem (New MCP Tool) */}
+              <div
+                onClick={() => {
+                  playAlexaChime();
+                  handleSendQuery("Alexa, generate post-mortem");
+                }}
+                className="voice-suggestion-card"
+                style={{
+                  padding: '0.3rem 0.55rem',
+                  borderRadius: '7px',
+                  background: 'rgba(129, 140, 248, 0.08)',
+                  border: '1px solid rgba(129, 140, 248, 0.25)',
+                  cursor: 'pointer'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#a5b4fc' }}>
+                    "Alexa, generate post-mortem"
+                  </div>
+                  <ChevronRight size={11} color="#a5b4fc" />
+                </div>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
+                  Blameless RCA & S3/Slack publish
                 </div>
               </div>
             </div>
