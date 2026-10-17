@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
-  Mic, Radio, BellRing, FileText, Cpu, ShieldAlert, 
-  RotateCcw, Send, CheckCircle2, AlertTriangle, Sparkles, Activity
+  Mic, BellRing, FileText, Cpu, ShieldAlert, 
+  RotateCcw, Send, CheckCircle2, AlertTriangle, ArrowRight, ArrowDown,
+  Sparkles, Lock, Unlock, Check
 } from 'lucide-react';
 
 export default function LiveFlowchart({ toolTraces = [], state = 'STANDBY' }) {
@@ -21,331 +22,347 @@ export default function LiveFlowchart({ toolTraces = [], state = 'STANDBY' }) {
   
   const hasSlack = toolTraces.some(t => t.tool === 'post_slack_notification');
   const isResolved = state === 'RESOLVED' || (hasRollback && hasSlack);
-
   const isVoiceActive = toolTraces.length > 0 || state === 'LISTENING' || state === 'THINKING';
-  const isMcpActive = toolTraces.length > 0;
+
+  // Helper for arrow connector
+  const FlowArrow = ({ active = false, warning = false, success = false, vertical = false }) => {
+    const color = warning ? '#f59e0b' : success ? '#10b981' : active ? '#00d2ff' : 'rgba(255,255,255,0.15)';
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: vertical ? '4px 0' : '0 4px',
+        color: color,
+        flexShrink: 0,
+        transition: 'all 0.3s ease'
+      }}>
+        {vertical ? (
+          <ArrowDown size={14} style={{ filter: active || warning || success ? `drop-shadow(0 0 4px ${color})` : 'none' }} />
+        ) : (
+          <ArrowRight size={14} style={{ filter: active || warning || success ? `drop-shadow(0 0 4px ${color})` : 'none' }} />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div style={{
-      background: 'rgba(6, 10, 20, 0.92)',
+      background: 'rgba(5, 9, 18, 0.95)',
       borderRadius: '14px',
-      padding: '1rem 1.15rem',
-      border: '1px solid rgba(0, 210, 255, 0.18)',
+      padding: '1rem',
+      border: '1px solid rgba(0, 210, 255, 0.15)',
       marginBottom: '1rem',
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)'
+      boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)'
     }}>
-      {/* Background ambient grid overlay */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundImage: 'radial-gradient(rgba(0, 210, 255, 0.04) 1px, transparent 1px)',
-        backgroundSize: '16px 16px',
-        pointerEvents: 'none'
-      }} />
-
-      {/* Header Bar */}
+      {/* Flowchart Title & Legend Bar */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: '0.85rem',
-        position: 'relative',
-        zIndex: 2,
+        paddingBottom: '0.65rem',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         flexWrap: 'wrap',
         gap: '0.5rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Activity size={14} color="#00d2ff" style={{ animation: isVoiceActive ? 'pulse-fast 1.2s infinite' : 'none' }} />
-          <span style={{ fontSize: '0.78rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#f1f5f9' }}>
-            Live Autonomous MCP Execution Flowchart
-          </span>
-          <span style={{
-            fontSize: '0.62rem',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            background: 'rgba(0, 210, 255, 0.15)',
-            color: '#38bdf8',
-            fontFamily: 'JetBrains Mono',
-            fontWeight: '700'
-          }}>
-            STREAMABLE HTTP
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          <Sparkles size={14} color="#00d2ff" />
+          <span style={{ fontSize: '0.78rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#f8fafc' }}>
+            Live SRE Incident Remediation Flowchart
           </span>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.68rem', color: '#64748b', fontFamily: 'JetBrains Mono' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.68rem', color: '#64748b' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00d2ff' }} />
-            Active Trace
+            Active Step
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b' }} />
-            Safety Interlock
+            Voice 2FA Gate
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
-            Remediated
+            Verified
           </span>
         </div>
       </div>
 
-      {/* Interactive SVG Flowchart DAG */}
-      <div style={{ width: '100%', overflowX: 'auto', position: 'relative', zIndex: 2 }}>
-        <svg
-          viewBox="0 0 940 240"
-          style={{ width: '100%', minWidth: '780px', height: 'auto', display: 'block' }}
-        >
-          <defs>
-            {/* Glow Filters */}
-            <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-            <filter id="glow-amber" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-            <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
+      {/* =========================================================================
+          TIER 1: TRIAGE & DIAGNOSIS PIPELINE (Left to Right)
+          ========================================================================= */}
+      <div style={{ marginBottom: '0.6rem' }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', color: '#64748b', marginBottom: '0.4rem', letterSpacing: '0.05em' }}>
+          Phase 1: Autonomous Triage & Diagnostics
+        </div>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '0.5rem',
+          alignItems: 'center'
+        }}>
+          {/* Node 1: Voice Input */}
+          <div style={{
+            background: isVoiceActive ? 'rgba(0, 210, 255, 0.1)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${isVoiceActive ? 'rgba(0, 210, 255, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            boxShadow: isVoiceActive ? '0 0 14px rgba(0, 210, 255, 0.2)' : 'none',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#00d2ff', fontSize: '0.72rem', fontWeight: '700' }}>
+                <Mic size={13} />
+                <span>1. Voice Input</span>
+              </div>
+              <span style={{ fontSize: '0.58rem', padding: '1px 4px', borderRadius: '3px', background: isVoiceActive ? 'rgba(0,210,255,0.2)' : 'rgba(255,255,255,0.06)', color: isVoiceActive ? '#38bdf8' : '#64748b' }}>
+                Alexa+
+              </span>
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              Bedside SRE Query
+            </div>
+            <div style={{ fontSize: '0.65rem', color: '#38bdf8', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              Streamable HTTP
+            </div>
+          </div>
 
-            {/* Line Gradients */}
-            <linearGradient id="grad-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#00d2ff" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.8" />
-            </linearGradient>
-            <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#c084fc" stopOpacity="0.9" />
-            </linearGradient>
-            <linearGradient id="grad-curve-down" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#c084fc" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.9" />
-            </linearGradient>
-            <linearGradient id="grad-amber" x1="100%" y1="0%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.8" />
-            </linearGradient>
-            <linearGradient id="grad-green" x1="100%" y1="0%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#34d399" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
+          {/* Node 2: CloudWatch Alarms */}
+          <div style={{
+            background: hasAlarms ? 'rgba(244, 63, 94, 0.1)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${isAlarmsExecuting ? '#00d2ff' : hasAlarms ? 'rgba(244, 63, 94, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            boxShadow: hasAlarms ? '0 0 14px rgba(244, 63, 94, 0.15)' : 'none',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: hasAlarms ? '#fb7185' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                <BellRing size={13} />
+                <span>2. CloudWatch</span>
+              </div>
+              {hasAlarms && <span style={{ fontSize: '0.58rem', padding: '1px 4px', borderRadius: '3px', background: 'rgba(244,63,94,0.25)', color: '#fda4af', fontWeight: '700' }}>ALARM</span>}
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {hasAlarms ? 'Sev-2 Latency Spike' : 'Check Metrics'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: hasAlarms ? '#fca5a5' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              get_active_alarms
+            </div>
+          </div>
 
-          {/* ==================== SVG CONNECTOR PATHS ==================== */}
-          {/* Path 1: Voice -> Alexa+ MCP */}
-          <path
-            d="M 165 55 L 205 55"
-            stroke={isVoiceActive ? 'url(#grad-cyan)' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={isVoiceActive ? '2.5' : '1.5'}
-            strokeDasharray={isVoiceActive ? '4,4' : 'none'}
-            className={isVoiceActive ? 'flow-line-active' : ''}
-          />
+          {/* Node 3: Container Logs */}
+          <div style={{
+            background: hasLogs ? 'rgba(56, 189, 248, 0.1)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${isLogsExecuting ? '#00d2ff' : hasLogs ? 'rgba(56, 189, 248, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: hasLogs ? '#38bdf8' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                <FileText size={13} />
+                <span>3. Error Logs</span>
+              </div>
+              {hasLogs && <CheckCircle2 size={12} color="#38bdf8" />}
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {hasLogs ? 'OOMKill ExitCode 137' : 'Ingest Stacks'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: hasLogs ? '#7dd3fc' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              fetch_error_logs
+            </div>
+          </div>
 
-          {/* Path 2: Alexa+ MCP -> CloudWatch Alarms */}
-          <path
-            d="M 355 55 L 395 55"
-            stroke={hasAlarms || isAlarmsExecuting ? 'url(#grad-cyan)' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={hasAlarms || isAlarmsExecuting ? '2.5' : '1.5'}
-            strokeDasharray={hasAlarms || isAlarmsExecuting ? '4,4' : 'none'}
-            className={isAlarmsExecuting ? 'flow-line-active' : ''}
-          />
+          {/* Node 4: AWS Bedrock Diagnosis */}
+          <div style={{
+            background: hasBedrock ? 'rgba(192, 132, 252, 0.12)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${isBedrockExecuting ? '#00d2ff' : hasBedrock ? 'rgba(192, 132, 252, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            boxShadow: hasBedrock ? '0 0 16px rgba(192, 132, 252, 0.2)' : 'none',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: hasBedrock ? '#c084fc' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                <Cpu size={13} />
+                <span>4. AWS Bedrock</span>
+              </div>
+              {hasBedrock && <span style={{ fontSize: '0.58rem', padding: '1px 4px', borderRadius: '3px', background: 'rgba(192,132,252,0.25)', color: '#e9d5ff', fontWeight: '700' }}>SONNET</span>}
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {hasBedrock ? 'Recommend Rollback' : 'AI Reasoning'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: hasBedrock ? '#e9d5ff' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              diagnose_incident
+            </div>
+          </div>
+        </div>
+      </div>
 
-          {/* Path 3: CloudWatch Alarms -> Container Logs */}
-          <path
-            d="M 545 55 L 585 55"
-            stroke={hasLogs || isLogsExecuting ? 'url(#grad-cyan)' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={hasLogs || isLogsExecuting ? '2.5' : '1.5'}
-            strokeDasharray={hasLogs || isLogsExecuting ? '4,4' : 'none'}
-            className={isLogsExecuting ? 'flow-line-active' : ''}
-          />
+      {/* Downward Transition Conduit */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.5rem',
+        margin: '0.4rem 0',
+        padding: '0.2rem 0'
+      }}>
+        <div style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)' }} />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          fontSize: '0.64rem',
+          fontWeight: '700',
+          color: hasSafetyGate || hasRollback ? '#fbbf24' : '#64748b',
+          fontFamily: 'JetBrains Mono',
+          background: hasSafetyGate || hasRollback ? 'rgba(245, 158, 11, 0.12)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${hasSafetyGate || hasRollback ? 'rgba(245, 158, 11, 0.3)' : 'rgba(255,255,255,0.06)'}`,
+          padding: '2px 8px',
+          borderRadius: '9999px'
+        }}>
+          <span>Bedrock Recommends Mutation</span>
+          <ArrowDown size={11} />
+          <span>Entering Safety Gate</span>
+        </div>
+        <div style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)' }} />
+      </div>
 
-          {/* Path 4: Container Logs -> AWS Bedrock */}
-          <path
-            d="M 735 55 L 775 55"
-            stroke={hasBedrock || isBedrockExecuting ? 'url(#grad-purple)' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={hasBedrock || isBedrockExecuting ? '2.5' : '1.5'}
-            strokeDasharray={hasBedrock || isBedrockExecuting ? '4,4' : 'none'}
-            className={isBedrockExecuting ? 'flow-line-active' : ''}
-          />
+      {/* =========================================================================
+          TIER 2: GOVERNANCE & REMEDIATION PIPELINE
+          ========================================================================= */}
+      <div>
+        <div style={{ fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', color: '#64748b', marginBottom: '0.4rem', letterSpacing: '0.05em' }}>
+          Phase 2: Governance & Container Remediation
+        </div>
 
-          {/* Path 5: Bedrock -> Curved Bezier Down to Voice 2FA Gate */}
-          <path
-            d="M 850 85 C 850 140, 770 175, 740 185"
-            fill="none"
-            stroke={hasSafetyGate || hasRollback ? 'url(#grad-curve-down)' : 'rgba(255,255,255,0.08)'}
-            strokeWidth={hasSafetyGate || hasRollback ? '2.5' : '1.5'}
-            strokeDasharray={hasSafetyGate || hasRollback ? '4,4' : 'none'}
-            className={hasSafetyGate && !hasRollback ? 'flow-line-active' : ''}
-          />
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '0.5rem',
+          alignItems: 'center'
+        }}>
+          {/* Node 5: Voice 2FA Safety Gate */}
+          <div style={{
+            background: hasRollback 
+              ? 'rgba(16, 185, 129, 0.12)' 
+              : hasSafetyGate 
+              ? 'rgba(245, 158, 11, 0.15)' 
+              : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${
+              hasRollback 
+                ? 'rgba(16, 185, 129, 0.5)' 
+                : hasSafetyGate 
+                ? 'rgba(245, 158, 11, 0.6)' 
+                : 'rgba(255,255,255,0.08)'
+            }`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            boxShadow: hasSafetyGate && !hasRollback 
+              ? '0 0 16px rgba(245, 158, 11, 0.25)' 
+              : hasRollback 
+              ? '0 0 14px rgba(16, 185, 129, 0.2)' 
+              : 'none',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: hasRollback ? '#34d399' : hasSafetyGate ? '#fbbf24' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                {hasRollback ? <Unlock size={13} /> : <Lock size={13} />}
+                <span>5. Voice 2FA Gate</span>
+              </div>
+              <span style={{
+                fontSize: '0.58rem',
+                padding: '1px 4px',
+                borderRadius: '3px',
+                background: hasRollback ? 'rgba(16,185,129,0.25)' : hasSafetyGate ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.06)',
+                color: hasRollback ? '#6ee7b7' : hasSafetyGate ? '#fcd34d' : '#64748b',
+                fontWeight: '700'
+              }}>
+                {hasRollback ? 'VERIFIED' : hasSafetyGate ? 'INTERLOCK' : 'SAFETY'}
+              </span>
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {hasRollback ? 'Spoken Token Accepted' : hasSafetyGate ? 'Say "Confirm"' : 'Destructive Gate'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: hasRollback ? '#6ee7b7' : hasSafetyGate ? '#fcd34d' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              {hasRollback ? 'confirmed=True' : 'MUTATION_HALTED'}
+            </div>
+          </div>
 
-          {/* Path 6: Voice 2FA Gate -> Amazon ECS */}
-          <path
-            d="M 580 185 L 540 185"
-            stroke={hasRollback ? 'url(#grad-green)' : hasSafetyGate ? '#f59e0b' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={hasRollback ? '3' : '1.5'}
-            strokeDasharray={hasSafetyGate && !hasRollback ? '3,3' : 'none'}
-          />
+          {/* Node 6: Amazon ECS Rollback */}
+          <div style={{
+            background: hasRollback ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${isRollbackExecuting ? '#00d2ff' : hasRollback ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            boxShadow: hasRollback ? '0 0 14px rgba(16, 185, 129, 0.2)' : 'none',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: hasRollback ? '#34d399' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                <RotateCcw size={13} />
+                <span>6. Amazon ECS</span>
+              </div>
+              {hasRollback && <CheckCircle2 size={12} color="#10b981" />}
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {hasRollback ? 'Task Def: rev 41' : 'update_service'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: hasRollback ? '#6ee7b7' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              execute_rollback
+            </div>
+          </div>
 
-          {/* Path 7: Amazon ECS -> Slack Audit */}
-          <path
-            d="M 390 185 L 350 185"
-            stroke={hasSlack ? 'url(#grad-green)' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={hasSlack ? '2.5' : '1.5'}
-            strokeDasharray={hasRollback && !hasSlack ? '4,4' : 'none'}
-          />
+          {/* Node 7: Slack Audit Trail */}
+          <div style={{
+            background: hasSlack ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${hasSlack ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: hasSlack ? '#34d399' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                <Send size={13} />
+                <span>7. Team Slack</span>
+              </div>
+              {hasSlack && <CheckCircle2 size={12} color="#10b981" />}
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {hasSlack ? 'Delivered #sre' : 'Audit Broadcast'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: hasSlack ? '#6ee7b7' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              post_slack_notification
+            </div>
+          </div>
 
-          {/* Path 8: Slack Audit -> Remediated Status */}
-          <path
-            d="M 200 185 L 160 185"
-            stroke={isResolved ? 'url(#grad-green)' : 'rgba(255,255,255,0.1)'}
-            strokeWidth={isResolved ? '2.5' : '1.5'}
-          />
-
-          {/* ==================== ROW 1: TRIAGE & DIAGNOSIS NODES ==================== */}
-          {/* Node 1: On-Call Voice Input */}
-          <g transform="translate(15, 25)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={isVoiceActive ? 'rgba(0, 210, 255, 0.12)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isVoiceActive ? '#00d2ff' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-              filter={isVoiceActive ? 'url(#glow-cyan)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill="rgba(0, 210, 255, 0.15)" />
-            <text x="28" y="34" textAnchor="middle" fill="#00d2ff" fontSize="13">🗣️</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">1. Voice Command</text>
-            <text x="50" y="42" fill="#38bdf8" fontSize="9" fontFamily="JetBrains Mono">"Alexa, what's failing?"</text>
-          </g>
-
-          {/* Node 2: Alexa+ MCP Server */}
-          <g transform="translate(205, 25)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={isMcpActive ? 'rgba(0, 210, 255, 0.12)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isMcpActive ? '#38bdf8' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-            />
-            <circle cx="28" cy="30" r="14" fill="rgba(0, 210, 255, 0.15)" />
-            <text x="28" y="34" textAnchor="middle" fill="#38bdf8" fontSize="13">🎙️</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">2. Alexa+ Agent</text>
-            <text x="50" y="42" fill="#94a3b8" fontSize="9" fontFamily="JetBrains Mono">MCP Spec 2025-11-25+</text>
-          </g>
-
-          {/* Node 3: CloudWatch Alarms */}
-          <g transform="translate(395, 25)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={hasAlarms ? 'rgba(244, 63, 94, 0.12)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isAlarmsExecuting ? '#00d2ff' : hasAlarms ? '#f43f5e' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-              filter={isAlarmsExecuting ? 'url(#glow-cyan)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill={hasAlarms ? 'rgba(244, 63, 94, 0.2)' : 'rgba(255,255,255,0.06)'} />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">{hasAlarms ? '🚨' : '⚡'}</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">3. CloudWatch</text>
-            <text x="50" y="42" fill={hasAlarms ? '#fb7185' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">get_active_alarms</text>
-          </g>
-
-          {/* Node 4: Container Logs */}
-          <g transform="translate(585, 25)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={hasLogs ? 'rgba(56, 189, 248, 0.12)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isLogsExecuting ? '#00d2ff' : hasLogs ? '#38bdf8' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-              filter={isLogsExecuting ? 'url(#glow-cyan)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill="rgba(56, 189, 248, 0.15)" />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">📜</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">4. Error Logs</text>
-            <text x="50" y="42" fill={hasLogs ? '#38bdf8' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">fetch_error_logs</text>
-          </g>
-
-          {/* Node 5: AWS Bedrock Diagnosis */}
-          <g transform="translate(775, 25)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={hasBedrock ? 'rgba(192, 132, 252, 0.15)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isBedrockExecuting ? '#00d2ff' : hasBedrock ? '#c084fc' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-              filter={isBedrockExecuting ? 'url(#glow-cyan)' : hasBedrock ? 'url(#glow-cyan)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill="rgba(192, 132, 252, 0.2)" />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">🧠</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">5. AWS Bedrock</text>
-            <text x="50" y="42" fill={hasBedrock ? '#e9d5ff' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">Claude 3.5 Sonnet</text>
-          </g>
-
-          {/* ==================== ROW 2: GOVERNANCE & REMEDIATION ==================== */}
-          {/* Node 6: Voice 2FA Safety Gate (Amber Checkpoint) */}
-          <g transform="translate(580, 155)">
-            <rect
-              width="160" height="60" rx="8"
-              fill={hasRollback ? 'rgba(16, 185, 129, 0.12)' : hasSafetyGate ? 'rgba(245, 158, 11, 0.16)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={hasRollback ? '#10b981' : hasSafetyGate ? '#f59e0b' : 'rgba(255,255,255,0.12)'}
-              strokeWidth={hasSafetyGate && !hasRollback ? '2' : '1.5'}
-              filter={hasSafetyGate && !hasRollback ? 'url(#glow-amber)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill={hasSafetyGate ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255,255,255,0.06)'} />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">{hasRollback ? '🔓' : '🔒'}</text>
-            <text x="50" y="27" fill={hasRollback ? '#6ee7b7' : hasSafetyGate ? '#fcd34d' : '#f8fafc'} fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">
-              6. Voice 2FA Gate
-            </text>
-            <text x="50" y="42" fill={hasRollback ? '#34d399' : hasSafetyGate ? '#fbbf24' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">
-              {hasRollback ? 'AUTHORIZED (CONFIRMED)' : hasSafetyGate ? 'AWAITING SPOKEN 2FA' : 'MUTATION INTERLOCK'}
-            </text>
-          </g>
-
-          {/* Node 7: Amazon ECS Rollback */}
-          <g transform="translate(390, 155)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={hasRollback ? 'rgba(16, 185, 129, 0.15)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isRollbackExecuting ? '#00d2ff' : hasRollback ? '#10b981' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-              filter={hasRollback ? 'url(#glow-green)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill={hasRollback ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.06)'} />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">🚀</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">7. Amazon ECS</text>
-            <text x="50" y="42" fill={hasRollback ? '#6ee7b7' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">checkout-api:41</text>
-          </g>
-
-          {/* Node 8: Slack Audit Trail */}
-          <g transform="translate(200, 155)">
-            <rect
-              width="150" height="60" rx="8"
-              fill={hasSlack ? 'rgba(16, 185, 129, 0.15)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={hasSlack ? '#10b981' : 'rgba(255,255,255,0.12)'}
-              strokeWidth="1.5"
-            />
-            <circle cx="28" cy="30" r="14" fill={hasSlack ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.06)'} />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">💬</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">8. Team Slack</text>
-            <text x="50" y="42" fill={hasSlack ? '#6ee7b7' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">#sre-incidents</text>
-          </g>
-
-          {/* Node 9: Remediated / Healthy Outcome */}
-          <g transform="translate(15, 155)">
-            <rect
-              width="145" height="60" rx="8"
-              fill={isResolved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(15, 23, 42, 0.7)'}
-              stroke={isResolved ? '#00e676' : 'rgba(255,255,255,0.12)'}
-              strokeWidth={isResolved ? '2' : '1.5'}
-              filter={isResolved ? 'url(#glow-green)' : 'none'}
-            />
-            <circle cx="28" cy="30" r="14" fill={isResolved ? 'rgba(0, 230, 118, 0.25)' : 'rgba(255,255,255,0.06)'} />
-            <text x="28" y="34" textAnchor="middle" fontSize="13">✅</text>
-            <text x="50" y="27" fill="#f8fafc" fontSize="11" fontWeight="700" fontFamily="Inter, sans-serif">9. Status 200 OK</text>
-            <text x="50" y="42" fill={isResolved ? '#00e676' : '#64748b'} fontSize="9" fontFamily="JetBrains Mono">Zero 5xx • 41% Mem</text>
-          </g>
-        </svg>
+          {/* Node 8: Resolved Health Check */}
+          <div style={{
+            background: isResolved ? 'rgba(16, 185, 129, 0.18)' : 'rgba(15, 23, 42, 0.6)',
+            border: `1px solid ${isResolved ? '#00e676' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '0.6rem 0.75rem',
+            boxShadow: isResolved ? '0 0 18px rgba(0, 230, 118, 0.25)' : 'none',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: isResolved ? '#00e676' : '#94a3b8', fontSize: '0.72rem', fontWeight: '700' }}>
+                <CheckCircle2 size={13} />
+                <span>8. Status 200 OK</span>
+              </div>
+              {isResolved && <span style={{ fontSize: '0.58rem', padding: '1px 4px', borderRadius: '3px', background: 'rgba(0,230,118,0.25)', color: '#00e676', fontWeight: '700' }}>HEALTHY</span>}
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: isResolved ? '#00e676' : '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {isResolved ? 'Zero 5xx • 41% Mem' : 'Monitoring'}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: isResolved ? '#34d399' : '#64748b', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+              Cluster Healthy
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
