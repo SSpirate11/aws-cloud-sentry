@@ -11,7 +11,6 @@ import AudioWaveform from './components/AudioWaveform';
 
 export default function App() {
   const [state, setState] = useState('STANDBY'); // STANDBY, LISTENING, THINKING, INCIDENT_ACTIVE, AWAITING_CONFIRMATION, RESOLVED
-  const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [wakeWordEnabled, setWakeWordEnabled] = useState(true);
@@ -31,8 +30,16 @@ export default function App() {
   const [toolTraces, setToolTraces] = useState([]);
   
   const recognitionRef = useRef(null);
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const isSpeakingRef = useRef(isSpeaking);
   isSpeakingRef.current = isSpeaking;
+  const wakeWordActiveRef = useRef(wakeWordEnabled);
+  wakeWordActiveRef.current = wakeWordEnabled;
+
+  // Single source of truth: isListening is true ONLY when state is 'LISTENING'
+  const isListening = (state === 'LISTENING');
+
 
   // Authentic Amazon Echo dual-tone acoustic wake chime (G5 784Hz -> C6 1046Hz)
   const playAlexaChime = () => {
@@ -81,13 +88,9 @@ export default function App() {
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
     recognition.onresult = (event) => {
-      // Ignore audio if Alexa is currently speaking (prevents echo self-triggering)
-      if (isSpeakingRef.current) return;
+      // Ignore audio if Alexa is currently speaking or executing tools
+      if (isSpeakingRef.current || stateRef.current === 'THINKING') return;
 
       let finalTranscript = '';
       let interimTranscript = '';
@@ -106,17 +109,14 @@ export default function App() {
       if (/\b(alexa|hey alexa|echo)\b/i.test(heardText)) {
         playAlexaChime();
         setWakeDetected(true);
-        setState('LISTENING');
         setTimeout(() => setWakeDetected(false), 2500);
       }
 
       if (finalTranscript.trim()) {
         const text = finalTranscript.trim();
-        // If wake word is enabled, process when it mentions Alexa, or when awaiting follow-up confirmation
         const mentionsAlexa = /\b(alexa|hey alexa)\b/i.test(text);
         
-        if (mentionsAlexa || state === 'AWAITING_CONFIRMATION' || state === 'LISTENING') {
-          setUserTranscript(text);
+        if (mentionsAlexa || stateRef.current === 'AWAITING_CONFIRMATION' || stateRef.current === 'LISTENING') {
           handleSendQuery(text);
         }
       }
@@ -129,12 +129,10 @@ export default function App() {
     };
 
     recognition.onend = () => {
-      setIsListening(false);
-      // Restart passive wake-word listening if enabled and Alexa isn't speaking
-      if (wakeWordEnabled && !isSpeakingRef.current) {
+      // Safely restart passive wake-word listening if enabled and Alexa isn't speaking or thinking
+      if (wakeWordActiveRef.current && !isSpeakingRef.current && stateRef.current !== 'THINKING') {
         try {
           recognition.start();
-          setIsListening(true);
         } catch (e) {}
       }
     };
@@ -184,10 +182,9 @@ export default function App() {
     const handleSpeechDone = () => {
       setIsSpeaking(false);
       // Resume wake-word listening
-      if (wakeWordEnabled && recognitionRef.current) {
+      if (wakeWordActiveRef.current && recognitionRef.current && stateRef.current !== 'THINKING') {
         try {
           recognitionRef.current.start();
-          setIsListening(true);
         } catch (e) {}
       }
     };
@@ -199,17 +196,17 @@ export default function App() {
   };
 
   const toggleMic = () => {
-    if (isListening) {
+    if (state === 'LISTENING') {
       try {
         recognitionRef.current?.stop();
       } catch (e) {}
-      setIsListening(false);
+      setState('STANDBY');
     } else {
+      playAlexaChime();
+      setState('LISTENING');
       if (recognitionRef.current) {
         try {
-          playAlexaChime();
           recognitionRef.current.start();
-          setIsListening(true);
         } catch (e) {
           console.warn('Mic start notice:', e);
         }

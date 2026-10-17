@@ -23,20 +23,13 @@ export default function EchoRing({ state, isListening, isSpeaking, onToggleMic }
   const stateClass = getStateClass();
 
   const getStatusLabel = () => {
-    if (isListening) return 'Listening to you...';
     if (isSpeaking) return 'Alexa+ Speaking...';
-    switch (state) {
-      case 'THINKING':
-        return 'Alexa+ Reasoning via MCP...';
-      case 'AWAITING_CONFIRMATION':
-        return '⚠️ Voice 2FA Authorization Required';
-      case 'RESOLVED':
-        return '✅ Incident Remediated (Healthy)';
-      case 'INCIDENT_ACTIVE':
-        return '🚨 Sev-2 CloudWatch Alarm Active';
-      default:
-        return 'Alexa+ Ready (Tap to Speak)';
-    }
+    if (state === 'THINKING') return 'Alexa+ Reasoning via MCP...';
+    if (state === 'LISTENING') return 'Listening to you...';
+    if (state === 'AWAITING_CONFIRMATION') return '⚠️ Voice 2FA Authorization Required';
+    if (state === 'RESOLVED') return '✅ Incident Remediated (Healthy)';
+    if (state === 'INCIDENT_ACTIVE') return '🚨 Sev-2 CloudWatch Alarm Active';
+    return 'Alexa+ Ready (Say "Alexa" or Tap)';
   };
 
   return (
@@ -61,16 +54,16 @@ export default function EchoRing({ state, isListening, isSpeaking, onToggleMic }
 
           {/* Center Alexa Glyph / Status Icon */}
           <div style={{ position: 'relative', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {isListening ? (
-              <Radio size={40} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 10px #00d2ff)', animation: 'pulse-fast 1s infinite' }} />
-            ) : isSpeaking ? (
+            {isSpeaking ? (
               <Volume2 size={40} color="#38bdf8" style={{ filter: 'drop-shadow(0 0 10px #38bdf8)' }} />
+            ) : state === 'THINKING' ? (
+              <Sparkles size={40} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 12px #00d2ff)', animation: 'spin-glow 2s infinite linear' }} />
+            ) : state === 'LISTENING' ? (
+              <Radio size={40} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 10px #00d2ff)', animation: 'pulse-fast 1s infinite' }} />
             ) : state === 'AWAITING_CONFIRMATION' ? (
               <ShieldAlert size={40} color="#ffb700" style={{ filter: 'drop-shadow(0 0 12px #ff9900)' }} />
             ) : state === 'RESOLVED' ? (
               <CheckCircle size={40} color="#00e676" style={{ filter: 'drop-shadow(0 0 12px #00e676)' }} />
-            ) : state === 'THINKING' ? (
-              <Sparkles size={40} color="#00d2ff" style={{ filter: 'drop-shadow(0 0 12px #00d2ff)', animation: 'spin-glow 2s infinite linear' }} />
             ) : (
               <Mic size={38} color="#94a3b8" />
             )}
