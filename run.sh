@@ -41,7 +41,7 @@ fi
 
 # 1. Start Python MCP Backend
 echo "[1/2] Launching Python MCP Server on http://localhost:8000..."
-uvicorn server:app --host 0.0.0.0 --port 8000 &
+uvicorn server:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
 
 trap "echo 'Shutting down CloudSentry...'; kill $BACKEND_PID $MOTO_PID 2>/dev/null; exit" SIGINT SIGTERM EXIT
