@@ -115,8 +115,8 @@ flowchart TD
 
 ### 1. Clone & Set Up Environment
 ```bash
-git clone https://github.com/YOUR_USERNAME/cloud-sentry.git
-cd cloud-sentry
+git clone https://github.com/SSpirate11/aws-cloud-sentry.git
+cd aws-cloud-sentry
 ```
 
 ### 2. Launch Options
