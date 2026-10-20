@@ -1,0 +1,55 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "summary": "Voice-driven AWS incident triage, N-1 ECS rollback pre-flight, and Blameless COE correlation over MCP.",
+          "examplePhrases": [
+            "Alexa, ask cloud sentry what is failing in production",
+            "Alexa, ask cloud sentry to correlate deployment changes",
+            "Alexa, ask cloud sentry to rollback checkout api"
+          ],
+          "keywords": [
+            "AWS",
+            "SRE",
+            "CloudWatch",
+            "ECS",
+            "Bedrock",
+            "MCP",
+            "DevOps"
+          ],
+          "name": "AWS CloudSentry",
+          "description": "Self-hosted Model Context Protocol (MCP) Server and Alexa+ Incident Commander for AWS SREs."
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "Start the CloudSentry backend (./run.sh) and point the skill HTTPS endpoint to /api/alexa-webhook or connect an MCP client to /mcp.",
+      "category": "DEVELOPER_TOOLS",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "https://localhost:8000/api/alexa-webhook",
+          "sslCertificateType": "Wildcard"
+        },
+        "interfaces": [
+          {
+            "type": "ALEXA_PRESENTATION_APL",
+            "supportedViewports": [
+              {
+                "mode": "HUB",
+                "shape": "RECTANGLE",
+                "minWidth": 1024,
+                "maxWidth": 1280,
+                "minHeight": 600,
+                "maxHeight": 800
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}

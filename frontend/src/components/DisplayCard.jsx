@@ -292,7 +292,7 @@ export default function DisplayCard({ card, state }) {
         </div>
       )}
 
-      {/* VIEW B2: 3 AM Forensic Git Blame & SRE Coffee Bounty Card */}
+      {/* VIEW B2: Amazon Blameless Correction of Errors (COE) 5-Whys Change Correlation Card */}
       {card.culprit_data && (
         <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
           <div style={{
@@ -301,25 +301,25 @@ export default function DisplayCard({ card, state }) {
             gap: '0.35rem'
           }}>
             <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Offending Commit</div>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Correlated Commit</div>
               <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#fbbf24', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
-                {card.culprit_data.commit_sha} ({card.culprit_data.pr_number})
+                {card.culprit_data.commit_sha} ({card.culprit_data.deployment_version})
               </div>
-              <div style={{ fontSize: '0.62rem', color: '#cbd5e1', marginTop: '1px' }}>{card.culprit_data.author}</div>
+              <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '1px' }}>{card.culprit_data.active_revision}</div>
             </div>
-            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>PR Review Speed</div>
-              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#fb7185', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
-                ⚡ {card.culprit_data.pr_approval_time}
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(0, 210, 255, 0.3)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>COE Methodology</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#38bdf8', marginTop: '2px' }}>
+                Blameless 5-Whys
               </div>
-              <div style={{ fontSize: '0.62rem', color: '#fda4af', marginTop: '1px' }}>"{card.culprit_data.pr_comment}"</div>
+              <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>Systemic Pipeline Audit</div>
             </div>
-            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Deploy Timestamp</div>
-              <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#c084fc', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
-                {card.culprit_data.deployed_at}
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Rollback Target (N-1)</div>
+              <div style={{ fontSize: '0.76rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.culprit_data.rollback_revision}
               </div>
-              <div style={{ fontSize: '0.6rem', color: '#e9d5ff', marginTop: '1px' }}>{card.culprit_data.ci_skipped}</div>
+              <div style={{ fontSize: '0.6rem', color: '#a7f3d0', marginTop: '1px' }}>Known-Good Task Def</div>
             </div>
           </div>
 
@@ -329,39 +329,37 @@ export default function DisplayCard({ card, state }) {
             border: '1px solid rgba(255, 255, 255, 0.08)',
             padding: '0.4rem 0.6rem',
             fontFamily: 'JetBrains Mono, monospace',
-            fontSize: '0.68rem',
-            color: '#f8fafc'
+            fontSize: '0.64rem',
+            color: '#f8fafc',
+            maxHeight: '115px',
+            overflowY: 'auto'
           }}>
-            <div style={{ color: '#94a3b8', fontSize: '0.6rem', marginBottom: '2px' }}>git log -n 1 --stat {card.culprit_data.commit_sha}</div>
-            <div style={{ color: '#fcd34d', fontWeight: '700' }}>"{card.culprit_data.commit_message}"</div>
-            <div style={{ color: '#fb7185', fontSize: '0.63rem', marginTop: '4px' }}>
-              😴 Sleep Disruption Index: <strong>{card.culprit_data.sleep_disruption_score}</strong> • Reviewer: <strong>{card.culprit_data.pr_reviewer}</strong>
+            <div style={{ color: '#fbbf24', fontWeight: '700', marginBottom: '3px' }}>
+              CI/CD Gap: {card.culprit_data.ci_cd_gap_identified}
             </div>
+            {(card.culprit_data.five_whys || []).map((step, i) => (
+              <div key={i} style={{ color: '#cbd5e1', marginBottom: '2px' }}>{step}</div>
+            ))}
           </div>
 
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(16, 185, 129, 0.12))',
-            padding: '0.4rem 0.6rem',
+            background: 'rgba(16, 185, 129, 0.1)',
+            padding: '0.35rem 0.6rem',
             borderRadius: '6px',
-            border: '1px solid rgba(245, 158, 11, 0.4)',
-            fontSize: '0.68rem'
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            fontSize: '0.65rem'
           }}>
-            <div>
-              <div style={{ color: '#fef3c7', fontWeight: '800' }}>
-                ☕ SRE Reparation Bounty: <span style={{ color: '#34d399' }}>{card.culprit_data.coffee_bounty}</span>
-              </div>
-              <div style={{ color: '#cbd5e1', fontSize: '0.62rem', marginTop: '2px' }}>
-                🛡️ Guardrail Enforced: {card.culprit_data.automated_guardrail}
-              </div>
+            <div style={{ color: '#d1fae5' }}>
+              <strong>Preventive Guardrail:</strong> {card.culprit_data.automated_guardrail}
             </div>
           </div>
         </div>
       )}
 
-      {/* VIEW B3: Digital Twin Canary Pre-Flight & JIT IAM Session Policy Card */}
+      {/* VIEW B3: Deterministic N-1 Task Definition Pre-Flight & Scoped STS Policy Card */}
       {card.blast_radius_data && (
         <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
           <div style={{
@@ -369,23 +367,29 @@ export default function DisplayCard({ card, state }) {
             gridTemplateColumns: 'repeat(4, 1fr)',
             gap: '0.35rem'
           }}>
-            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(0, 210, 255, 0.25)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Synthetic Traffic</div>
-              <div style={{ fontSize: '0.76rem', fontWeight: '800', color: '#38bdf8', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>12,400 RPS</div>
-            </div>
-            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>OOM Risk</div>
-              <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
-                {card.blast_radius_data.oom_probability}
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(244, 63, 94, 0.25)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Current RAM</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#fb7185', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.blast_radius_data.current_memory_pct}
               </div>
             </div>
             <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Predicted RAM</div>
-              <div style={{ fontSize: '0.76rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>39.8% Peak</div>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>N-1 Baseline RAM</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.blast_radius_data.baseline_memory_pct}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Memory Freed</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.blast_radius_data.projected_memory_reduction}
+              </div>
             </div>
             <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(0, 210, 255, 0.25)' }}>
-              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Canary p99</div>
-              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#38bdf8', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>34ms</div>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Free Headroom</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#38bdf8', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.blast_radius_data.projected_headroom}
+              </div>
             </div>
           </div>
 
@@ -396,15 +400,15 @@ export default function DisplayCard({ card, state }) {
               border: '1px solid rgba(16, 185, 129, 0.35)',
               padding: '0.45rem 0.65rem',
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: '0.64rem',
+              fontSize: '0.62rem',
               color: '#cbd5e1'
             }}>
               <div style={{ color: '#34d399', fontWeight: '700', marginBottom: '3px' }}>
-                🔒 Just-In-Time (JIT) Alarm-Scoped AWS STS Session Policy Armed (TTL: {card.blast_radius_data.jit_iam_session.ttl_seconds}s)
+                Scoped AWS IAM Session Policy ({card.blast_radius_data.jit_iam_session.sts_mode})
               </div>
-              <div>Role ARN: <span style={{ color: '#38bdf8' }}>{card.blast_radius_data.jit_iam_session.role_arn}</span></div>
-              <div>Resource: <span style={{ color: '#e2e8f0' }}>{card.blast_radius_data.jit_iam_session.scoped_resource}</span></div>
-              <div>Guardrail: <span style={{ color: '#fbbf24' }}>{card.blast_radius_data.jit_iam_session.alarm_condition}</span></div>
+              <div>Scoped Service ARN: <span style={{ color: '#38bdf8' }}>{card.blast_radius_data.jit_iam_session.scoped_resource}</span></div>
+              <div>Allowed N-1 Task Def: <span style={{ color: '#e2e8f0' }}>{card.blast_radius_data.jit_iam_session.allowed_task_definition}</span></div>
+              <div>Schema Check: <span style={{ color: '#a7f3d0' }}>{card.blast_radius_data.schema_compatibility}</span></div>
             </div>
           )}
         </div>
@@ -521,18 +525,15 @@ export default function DisplayCard({ card, state }) {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: '700', color: '#fbbf24', fontSize: '0.78rem' }}>
-                    VOICE 2FA AUTHORIZATION GATE
-                  </span>
-                  <span style={{ fontSize: '0.62rem', padding: '1px 4px', borderRadius: '3px', background: 'rgba(245,158,11,0.25)', color: '#fef3c7', fontWeight: '700' }}>
-                    MUTATION INTERLOCK
+                    OUT-OF-BAND 2FA AUTHORIZATION GATE
                   </span>
                   <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '3px', background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', fontWeight: '700', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-                    ✓ {card.voice_biometric || 'VoiceID: SRE-Primary-OnCall (99.4%)'}
+                    {card.oob_delivery_channel || 'Sent to #sre-oncall-otp (Never spoken aloud)'}
                   </span>
                 </div>
 
                 <div style={{ color: '#fed7aa', fontSize: '0.72rem', marginTop: '0.1rem' }}>
-                  Target: Rollback <strong>{card.service}</strong> to <code>{card.target_revision}</code>.
+                  Scoped N-1 Rollback: <strong>{card.service}</strong> to <code>{card.target_revision}</code> (Requires active CloudWatch ALARM).
                 </div>
 
                 <div style={{
@@ -544,15 +545,14 @@ export default function DisplayCard({ card, state }) {
                   borderRadius: '4px',
                   background: 'rgba(0, 0, 0, 0.4)',
                   border: '1px dashed rgba(245, 158, 11, 0.6)',
-                  fontSize: '0.74rem',
+                  fontSize: '0.72rem',
                   color: '#fff'
                 }}>
-                  <span>👉 Speak into Alexa:</span>
-                  <span style={{ color: '#fbbf24', fontWeight: '700' }}>"Confirm rollback"</span>
-                  <span style={{ color: '#94a3b8', fontSize: '0.65rem' }}>or PIN</span>
-                  <code style={{ color: '#38bdf8', fontWeight: '800', background: 'rgba(0, 210, 255, 0.12)', padding: '1px 4px', borderRadius: '3px' }}>
-                    {card.challenge_pin || '4921'}
+                  <span>Simulated Slack #sre-oncall-otp Preview:</span>
+                  <code style={{ color: '#38bdf8', fontWeight: '800', background: 'rgba(0, 210, 255, 0.12)', padding: '1px 5px', borderRadius: '3px' }}>
+                    PIN {card.challenge_pin}
                   </code>
+                  <span style={{ color: '#94a3b8', fontSize: '0.64rem' }}>• Speak: "Confirm rollback {card.challenge_pin}"</span>
                 </div>
               </div>
             </div>

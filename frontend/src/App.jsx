@@ -568,8 +568,8 @@ export default function App() {
             title="Real-time E-Commerce Checkout Revenue Impact ($142.50/sec bleed vs 18m manual MTTR)"
             >
               {(state === 'RESOLVED' || state === 'CODE_FIX_READY' || state === 'POSTMORTEM_GENERATED')
-                ? '🛡️ $147,915 Saved (42s MTTR)'
-                : `💸 -$${revenueLost.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} (-$142/s)`}
+                ? (displayCard?.revenue_saved || 'Downtime Avoided (vs 18m baseline)')
+                : `Est. Loss: -$${revenueLost.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} (-$142/s)`}
             </span>
             <button
               onClick={triggerProactive3AMPage}
@@ -1050,7 +1050,8 @@ export default function App() {
               <div
                 onClick={() => {
                   playAlexaChime();
-                  handleSendQuery("Alexa, confirm rollback");
+                  const pinSuffix = displayCard?.challenge_pin ? ` ${displayCard.challenge_pin}` : '';
+                  handleSendQuery(`Alexa, confirm rollback${pinSuffix}`);
                 }}
                 className="voice-suggestion-card"
                 style={{
@@ -1063,12 +1064,12 @@ export default function App() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#6ee7b7' }}>
-                    "Alexa, confirm rollback"
+                    "Alexa, confirm rollback {displayCard?.challenge_pin || '<OTP>'}"
                   </div>
                   <ChevronRight size={11} color="#6ee7b7" />
                 </div>
                 <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
-                  Authorizes mutation & alerts Slack
+                  Verifies Out-of-Band Slack OTP
                 </div>
               </div>
 
@@ -1124,11 +1125,11 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Suggestion 6: Forensic Git Blame & Coffee Bounty (Shock & Amuse Judges) */}
+              {/* Suggestion 6: Blameless COE Change Correlation */}
               <div
                 onClick={() => {
                   playAlexaChime();
-                  handleSendQuery("Alexa, who broke production?");
+                  handleSendQuery("Alexa, correlate deployment changes");
                 }}
                 className="voice-suggestion-card"
                 style={{
@@ -1141,20 +1142,20 @@ export default function App() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#f472b6' }}>
-                    "Alexa, who broke production?"
+                    "Alexa, correlate deployment"
                   </div>
                   <ChevronRight size={11} color="#f472b6" />
                 </div>
                 <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
-                  Git Blame, 11s LGTM PR & Coffee Bounty
+                  Amazon Blameless COE 5-Whys Audit
                 </div>
               </div>
 
-              {/* Suggestion 7: Digital Twin Canary Pre-Flight & JIT IAM */}
+              {/* Suggestion 7: Deterministic N-1 Rollback Pre-Flight */}
               <div
                 onClick={() => {
                   playAlexaChime();
-                  handleSendQuery("Alexa, simulate blast radius");
+                  handleSendQuery("Alexa, verify pre-flight impact");
                 }}
                 className="voice-suggestion-card"
                 style={{
@@ -1167,12 +1168,12 @@ export default function App() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: '700', color: '#2dd4bf' }}>
-                    "Alexa, simulate blast radius"
+                    "Alexa, verify pre-flight impact"
                   </div>
                   <ChevronRight size={11} color="#2dd4bf" />
                 </div>
                 <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '1px' }}>
-                  12.4k RPS Digital Twin + JIT IAM Policy
+                  N-1 Telemetry Delta & Scoped STS Policy
                 </div>
               </div>
             </div>
@@ -1322,7 +1323,7 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span><strong>AWS CloudSentry Enterprise Incident Commander</strong></span>
           <span>•</span>
-          <span style={{ color: '#00d2ff' }}>Model Context Protocol v2.3</span>
+          <span style={{ color: '#00d2ff' }}>Model Context Protocol (Spec 2025-11-25+)</span>
           <span>•</span>
           <span style={{ color: '#10b981' }}>CloudWatch & ECS Operational</span>
         </div>

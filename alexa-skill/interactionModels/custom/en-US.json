@@ -1,0 +1,134 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "cloud sentry",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "TriageIncidentIntent",
+          "slots": [
+            {
+              "name": "service",
+              "type": "AWSServiceName"
+            }
+          ],
+          "samples": [
+            "what is failing in production",
+            "what triggered the alarm",
+            "check status of {service}",
+            "triage {service}"
+          ]
+        },
+        {
+          "name": "AuditDeploymentCOEIntent",
+          "slots": [
+            {
+              "name": "service",
+              "type": "AWSServiceName"
+            }
+          ],
+          "samples": [
+            "correlate deployment changes",
+            "correlate deployment changes for {service}",
+            "run five whys analysis on {service}",
+            "what deployment changed in {service}"
+          ]
+        },
+        {
+          "name": "VerifyBlastRadiusIntent",
+          "slots": [
+            {
+              "name": "service",
+              "type": "AWSServiceName"
+            }
+          ],
+          "samples": [
+            "verify pre-flight impact",
+            "simulate blast radius for {service}",
+            "run pre-flight check on {service}"
+          ]
+        },
+        {
+          "name": "ExecuteRollbackIntent",
+          "slots": [
+            {
+              "name": "service",
+              "type": "AWSServiceName"
+            }
+          ],
+          "samples": [
+            "rollback {service}",
+            "revert {service} to previous revision"
+          ]
+        },
+        {
+          "name": "ConfirmRollbackIntent",
+          "slots": [
+            {
+              "name": "pin",
+              "type": "AMAZON.FOUR_DIGIT_NUMBER"
+            }
+          ],
+          "samples": [
+            "confirm rollback {pin}",
+            "authorize rollback {pin}",
+            "confirm rollback"
+          ]
+        },
+        {
+          "name": "ProposeCodeFixIntent",
+          "slots": [
+            {
+              "name": "service",
+              "type": "AWSServiceName"
+            }
+          ],
+          "samples": [
+            "propose code fix",
+            "propose code fix for {service}",
+            "generate hotfix patch for {service}"
+          ]
+        },
+        {
+          "name": "GeneratePostmortemIntent",
+          "slots": [],
+          "samples": [
+            "generate post-mortem",
+            "generate incident report",
+            "archive postmortem to s3"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "AWSServiceName",
+          "values": [
+            {
+              "name": {
+                "value": "checkout-api",
+                "synonyms": ["checkout", "checkout service", "checkout api"]
+              }
+            },
+            {
+              "name": {
+                "value": "payment-gateway",
+                "synonyms": ["payments", "payment service", "payment gateway"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

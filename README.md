@@ -64,18 +64,19 @@ The backend ([`backend/server.py`](./backend/server.py)) mounts an official `MCP
 5. `post_slack_notification`: Broadcasts remediation audit trails to `#sre-incidents`.
 6. `propose_code_fix`: Synthesizes a unified Git diff patch fixing the underlying memory leak or DB connection leak.
 7. `generate_incident_postmortem`: Compiles a blameless SRE post-mortem (MTTA, MTTR, timeline, action items) and uploads it to Amazon S3 (`s3://sre-postmortems-us-east-1/2026/INC-84920.md`).
-8. `trace_deployment_culprit`: Correlates the failing revision with commit history, PR review duration (e.g., an 11-second `"LGTM"` approval on Friday at 4:58 PM), and enforces a Friday deployment freeze.
-9. `simulate_blast_radius`: Runs a 12,400 RPS digital twin canary simulation against the target rollback revision and issues a 300-second Just-In-Time (JIT) AWS STS IAM session policy.
+8. `trace_deployment_culprit`: Performs an **Amazon Blameless Correction of Errors (COE) 5-Whys** change correlation, inspecting real `git log` history and identifying the systemic CI/CD testing gap without blaming individual engineers.
+9. `simulate_blast_radius`: Computes the **Deterministic N-1 Task Definition Telemetry Delta** (recovering 58.2% RAM headroom from live incident metrics) and builds a least-privilege AWS STS IAM Session Policy JSON document (`Version: "2012-10-17"`).
 
 ### 2. Multi-Layer Security for Voice Infrastructure Mutations
 To prevent accidental or unauthorized production changes by voice, CloudSentry enforces three guardrails before `execute_rollback` can mutate ECS:
-* **Active Alarm Guardrail:** Rollbacks are only permitted when the target service has an active `ALARM` state in CloudWatch.
-* **JIT Scoped IAM Session Policy:** Generates a 300-second STS session policy (`CloudSentry-JIT-RollbackRole`) restricted to `ecs:UpdateService` on the affected service ARN.
-* **Voice 2FA + Biometric PIN Interlock:** Read-only tools run immediately, but mutating tools halt at `AWAITING_VOICE_CONFIRMATION`. The Echo Show displays the verified Alexa+ VoiceID profile (`99.4% match`) and requires the spoken confirmation phrase (`"Confirm rollback"`) or 4-digit challenge PIN (`4921`).
+* **Strictly Scoped N-1 Runbook Boundary:** CloudSentry cannot execute arbitrary shell commands or deploy new code; its only mutating action is reverting an ECS service to its immediately preceding known-good (`N-1`) task definition when an active `ALARM` state exists in CloudWatch.
+* **Least-Privilege AWS STS Session Policy:** Generates an IAM session policy JSON document restricted to `ecs:UpdateService` on the target service ARN and calls `sts.get_caller_identity()` when connected to AWS or LocalStack.
+* **Dynamic Out-of-Band Slack OTP (Never Spoken Aloud):** Read-only tools run immediately, but mutating tools halt at `AWAITING_VOICE_CONFIRMATION`. The backend generates a cryptographic 4-digit OTP via `secrets.randbelow(9000) + 1000`, dispatches it out-of-band to `#sre-oncall-otp` in Slack, and never speaks the code aloud over Alexa audio. Speaking an invalid PIN is rejected; speaking the active out-of-band PIN authorizes the rollback.
 
-### 3. Proactive 3 AM Wake-Up Page and Real-Time Revenue Bleed Tracker
-* **Proactive Wake-Up (`POST /api/proactive-alert`):** Instead of waiting passively while the on-call engineer sleeps through an outage, the **3 AM Page** trigger sounds a two-tone PagerDuty alert, queries CloudWatch via MCP, and has Alexa speak first to brief the engineer.
-* **Live FinOps Burn-Rate Counter:** Tracks real-time checkout revenue loss (`-$142.50/sec`) in the top bar while the alarm is active, and locks in the total revenue saved (`$147,915 protected vs. 18-minute manual login`) the moment the rollback succeeds.
+### 3. Alexa Skills Kit (ASK) v1.0 Webhook and Skill Package
+In addition to the MCP Streamable HTTP endpoint (`/mcp`) and the web simulator API (`/api/voice-turn`), the repository includes:
+* [`alexa-skill/skill.json`](./alexa-skill/skill.json) and [`alexa-skill/interactionModels/custom/en-US.json`](./alexa-skill/interactionModels/custom/en-US.json): A complete Alexa Custom Skill manifest and interaction model (`TriageIncidentIntent`, `AuditDeploymentCOEIntent`, `VerifyBlastRadiusIntent`, `ExecuteRollbackIntent`, `ConfirmRollbackIntent` with `AMAZON.FOUR_DIGIT_NUMBER` slot).
+* `POST /api/alexa-webhook`: Accepts standard Alexa Skills Kit v1.0 JSON envelopes (`LaunchRequest`, `IntentRequest`) and returns spec-compliant ASK v1.0 responses.
 
 ### 4. Triple-Tier Execution (Live AWS, LocalStack Docker, or Zero-Cred Mode)
 1. **LocalStack AWS Emulation ($0 Cost):** Run `docker compose up -d` and `backend/seed_localstack.py` to execute real `boto3` calls against local CloudWatch, CloudWatch Logs, ECS, and S3 on port `4566`.
@@ -156,7 +157,7 @@ AWS_ENDPOINT_URL=http://localhost:4566 ./run.sh
 
 ## Automated Verification Suite
 
-Run all 13 end-to-end tests:
+Run all 15 end-to-end tests:
 ```bash
 PYTHONPATH=backend ./backend/venv/bin/python backend/test_api.py
 ```
@@ -168,14 +169,16 @@ Test 8  (Bare 'Alexa' Wake Word) passed: Activated listening state
 Test 3  (Incident Triage via MCP Runtime) passed: 3 MCP tools executed
 Test 4  (Off-Script Dynamic SRE Q&A) passed: Context-aware technical response
 Test 5  (Multi-Service Triage: payment-gateway) passed
-Test 11 (MCP Tool: trace_deployment_culprit) passed: Forensic Git blame & coffee bounty
-Test 12 (MCP Tool: simulate_blast_radius) passed: Digital twin 12.4k RPS canary & JIT IAM
-Test 6  (Voice 2FA + Biometric + PIN Safety Gate) passed: Destructive mutation halted
-Test 7  (Voice 2FA Execution) passed: Service restored & Slack notified
+Test 11 (MCP Tool: trace_deployment_culprit) passed: Amazon Blameless COE 5-Whys & git log verified
+Test 12 (MCP Tool: simulate_blast_radius) passed: Deterministic N-1 telemetry delta & STS policy
+Test 6  (Out-of-Band Slack OTP Gate) passed: Dynamic PIN generated & never spoken aloud
+Test 6B (Wrong PIN Rejection) passed: Invalid PIN (0000) blocked
+Test 7  (Out-of-Band OTP Execution) passed: Service restored & Slack notified
 Test 9  (MCP Tool: propose_code_fix) passed: Unified Git diff generated
 Test 10 (MCP Tool: generate_incident_postmortem) passed: Report published
 Test 13 (Proactive 3 AM PagerDuty Wake-Up Push) passed: Ambient SRE alert verified
-ALL 13 END-TO-END TESTS PASSED (100% OK)!
+Test 14 (Alexa Skills Kit v1.0 Webhook) passed: Spec-compliant ASK JSON response verified
+ALL 15 END-TO-END TESTS PASSED (100% OK)!
 ```
 
 ---

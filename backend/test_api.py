@@ -65,28 +65,37 @@ def test_multi_service_payment_gateway():
     assert data["display_card"]["service"] == "payment-gateway"
     print("✓ Test 5 (Multi-Service Triage: payment-gateway) passed")
 
-def test_rollback_safety_gate():
+def test_rollback_safety_gate_and_oob_otp():
     res = client.post("/api/voice-turn", json={"query": "Rollback checkout-api to revision 41"})
     assert res.status_code == 200
     data = res.json()
     assert data["state"] == "AWAITING_CONFIRMATION"
-    assert "CONFIRM" in data["spoken_response"]
-    assert data["display_card"].get("challenge_pin") == "4921"
-    assert "VoiceID" in data["display_card"].get("voice_biometric", "")
+    dynamic_pin = data["display_card"].get("challenge_pin")
+    assert dynamic_pin and len(dynamic_pin) == 4 and dynamic_pin.isdigit()
+    # Critical security check: Alexa must NEVER speak the out-of-band OTP aloud!
+    assert dynamic_pin not in data["spoken_response"]
     assert data["tool_traces"][0]["status"] == "SAFETY_GATE_TRIGGERED"
     assert data["tool_traces"][0]["protocol"] == "MCP-2025-11-25+"
-    print("✓ Test 6 (Voice 2FA + Biometric + PIN Safety Gate) passed: Destructive mutation halted")
+    print(f"✓ Test 6 (Out-of-Band Slack OTP Gate) passed: Dynamic PIN ({dynamic_pin}) generated & never spoken aloud")
 
-def test_rollback_confirmation():
-    res = client.post("/api/voice-turn", json={"query": "Confirm rollback 4921"})
-    assert res.status_code == 200
-    data = res.json()
-    assert data["state"] == "RESOLVED"
-    assert "Rolled back" in data["spoken_response"] or "rolled back" in data["spoken_response"]
-    tools = [t["tool"] for t in data["tool_traces"]]
+    # Verify wrong PIN is rejected
+    wrong_pin = "0000" if dynamic_pin != "0000" else "9999"
+    bad_res = client.post("/api/voice-turn", json={"query": f"Confirm rollback {wrong_pin}"})
+    assert bad_res.status_code == 200
+    bad_data = bad_res.json()
+    assert bad_data["state"] == "AWAITING_CONFIRMATION"
+    assert bad_data["display_card"]["badge"] == "PIN REJECTED"
+    print(f"✓ Test 6B (Wrong PIN Rejection) passed: Invalid PIN ({wrong_pin}) blocked")
+
+    # Verify valid out-of-band PIN succeeds
+    ok_res = client.post("/api/voice-turn", json={"query": f"Confirm rollback {dynamic_pin}"})
+    assert ok_res.status_code == 200
+    ok_data = ok_res.json()
+    assert ok_data["state"] == "RESOLVED"
+    tools = [t["tool"] for t in ok_data["tool_traces"]]
     assert "execute_rollback" in tools
     assert "post_slack_notification" in tools
-    print("✓ Test 7 (Voice 2FA Execution) passed: Service restored & Slack notified")
+    print("✓ Test 7 (Out-of-Band OTP Execution) passed: Service restored & Slack notified")
 
 def test_alexa_wake_word():
     # Test bare wake word "Alexa"
@@ -122,22 +131,27 @@ def test_generate_incident_postmortem():
     print("✓ Test 10 (MCP Tool: generate_incident_postmortem) passed: Report published")
 
 def test_trace_deployment_culprit():
-    res = client.post("/api/voice-turn", json={"query": "Alexa, who broke production?"})
+    res = client.post("/api/voice-turn", json={"query": "Alexa, correlate deployment changes"})
     assert res.status_code == 200
     data = res.json()
     assert data["state"] == "CULPRIT_IDENTIFIED"
-    assert "culprit_data" in data["display_card"]
+    culprit = data["display_card"]["culprit_data"]
+    assert culprit["coe_methodology"] == "Amazon Blameless Correction of Errors (5 Whys)"
+    assert len(culprit["five_whys"]) == 5
+    assert isinstance(culprit["repo_recent_commits"], list)
     assert data["tool_traces"][0]["tool"] == "trace_deployment_culprit"
-    print("✓ Test 11 (MCP Tool: trace_deployment_culprit) passed: Forensic Git blame & coffee bounty")
+    print("✓ Test 11 (MCP Tool: trace_deployment_culprit) passed: Amazon Blameless COE 5-Whys & git log verified")
 
 def test_simulate_blast_radius():
-    res = client.post("/api/voice-turn", json={"query": "Alexa, simulate blast radius"})
+    res = client.post("/api/voice-turn", json={"query": "Alexa, verify pre-flight impact"})
     assert res.status_code == 200
     data = res.json()
     assert data["state"] == "BLAST_RADIUS_VERIFIED"
-    assert "blast_radius_data" in data["display_card"]
+    br = data["display_card"]["blast_radius_data"]
+    assert "projected_memory_reduction" in br
+    assert "policy_document" in br["jit_iam_session"]
     assert data["tool_traces"][0]["tool"] == "simulate_blast_radius"
-    print("✓ Test 12 (MCP Tool: simulate_blast_radius) passed: Digital twin 12.4k RPS canary & JIT IAM")
+    print("✓ Test 12 (MCP Tool: simulate_blast_radius) passed: Deterministic N-1 telemetry delta & STS policy")
 
 def test_proactive_3am_page():
     res = client.post("/api/proactive-alert")
@@ -147,6 +161,27 @@ def test_proactive_3am_page():
     assert "Wake up" in data["spoken_response"]
     assert len(data["tool_traces"]) == 3
     print("✓ Test 13 (Proactive 3 AM PagerDuty Wake-Up Push) passed: Ambient SRE alert verified")
+
+def test_alexa_skills_kit_webhook():
+    ask_payload = {
+        "version": "1.0",
+        "request": {
+            "type": "IntentRequest",
+            "intent": {
+                "name": "TriageIncidentIntent",
+                "slots": {
+                    "service": {"name": "service", "value": "checkout-api"}
+                }
+            }
+        }
+    }
+    res = client.post("/api/alexa-webhook", json=ask_payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["version"] == "1.0"
+    assert "checkout-api" in data["response"]["outputSpeech"]["text"]
+    assert data["sessionAttributes"]["mcp_tool_count"] == 3
+    print("✓ Test 14 (Alexa Skills Kit v1.0 Webhook) passed: Spec-compliant ASK JSON response verified")
 
 if __name__ == "__main__":
     print("========================================")
@@ -160,13 +195,13 @@ if __name__ == "__main__":
     test_multi_service_payment_gateway()
     test_trace_deployment_culprit()
     test_simulate_blast_radius()
-    test_rollback_safety_gate()
-    test_rollback_confirmation()
+    test_rollback_safety_gate_and_oob_otp()
     test_propose_code_fix()
     test_generate_incident_postmortem()
     test_proactive_3am_page()
+    test_alexa_skills_kit_webhook()
     print("========================================")
-    print("ALL 13 END-TO-END TESTS PASSED (100% OK)!")
+    print("ALL 15 END-TO-END TESTS PASSED (100% OK)!")
     print("========================================")
 
 
