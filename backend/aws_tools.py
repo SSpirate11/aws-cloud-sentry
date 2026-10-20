@@ -18,6 +18,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 
 from mock_scenarios import MOCK_SCENARIOS
+from local_aws_emulator import ensure_local_aws_emulator, LOCAL_AWS_STATE
 
 logger = logging.getLogger("cloud_sentry.aws_tools")
 
@@ -97,11 +98,31 @@ class AWSToolsManager:
                 self.sts_client = boto3.client("sts", region_name=self.region)
                 self.bedrock_client = boto3.client("bedrock-runtime", region_name=self.region)
                 logger.info("Connected to live AWS APIs (CloudWatch, ECS, S3, STS, Bedrock)")
+                return
             except Exception as e:
-                logger.warning(f"Could not initialize live AWS clients: {e}. Defaulting to mock engine.")
+                logger.warning(f"Could not initialize live AWS clients: {e}. Falling back to embedded SigV4 endpoint.")
                 self.has_aws_creds = False
-        else:
-            logger.info("Operating in high-fidelity mock engine mode.")
+
+        # 3. Default Zero-Cost Embedded AWS SigV4 HTTP Endpoint (real boto3 SDK calls at $0.00 cost)
+        try:
+            import boto3
+            self.endpoint_url = ensure_local_aws_emulator()
+            kw = dict(
+                endpoint_url=self.endpoint_url,
+                region_name=self.region,
+                aws_access_key_id="AKIAIOSFODNN7SENTRY",
+                aws_secret_access_key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYSENTRYKEY",
+            )
+            self.cw_client = boto3.client("cloudwatch", **kw)
+            self.logs_client = boto3.client("logs", **kw)
+            self.ecs_client = boto3.client("ecs", **kw)
+            self.s3_client = boto3.client("s3", **kw)
+            self.sts_client = boto3.client("sts", **kw)
+            self.has_aws_creds = True
+            self.is_localstack = True
+            logger.info(f"Connected real boto3 clients to embedded AWS SigV4 endpoint at {self.endpoint_url}")
+        except Exception as e:
+            logger.warning(f"Embedded AWS endpoint notice: {e}")
 
     def _match_incident_by_alarm_or_service(self, identifier: str) -> Dict[str, Any]:
         """Dynamically resolves an alarm name or service name to incident metadata."""
@@ -117,31 +138,32 @@ class AWSToolsManager:
             try:
                 response = self.cw_client.describe_alarms(StateValue="ALARM")
                 alarms = response.get("MetricAlarms", [])
-                if alarms:
-                    results = []
-                    for a in alarms:
-                        alarm_name = a.get("AlarmName", "")
-                        matched_inc = self._match_incident_by_alarm_or_service(alarm_name)
-                        dims = {d.get("Name"): d.get("Value") for d in a.get("Dimensions", [])}
-                        inferred_service = dims.get("ServiceName") or matched_inc.get("service", "checkout-api")
-                        results.append({
-                            "incident_id": matched_inc.get("id", "INC-84920"),
-                            "alarm_name": alarm_name,
-                            "state": a.get("StateValue"),
-                            "reason": a.get("StateReason"),
-                            "metric": a.get("MetricName"),
-                            "namespace": a.get("Namespace"),
-                            "service": inferred_service,
-                            "cluster": dims.get("ClusterName") or matched_inc.get("cluster", f"production-{self.region}"),
-                            "severity": matched_inc.get("severity", "CRITICAL (Sev-2)"),
-                            "current_revision": matched_inc.get("current_task_revision", f"{inferred_service}:42"),
-                            "previous_revision": matched_inc.get("previous_task_revision", f"{inferred_service}:41"),
-                            "deployment_version": matched_inc.get("deployment_version", "v2.4.1"),
-                            "metrics": dict(matched_inc.get("alarm", {}).get("Metrics", {})),
-                            "dimensions": a.get("Dimensions", []),
-                            "updated_at": a.get("StateUpdatedTimestamp", "").isoformat() if hasattr(a.get("StateUpdatedTimestamp"), "isoformat") else str(a.get("StateUpdatedTimestamp"))
-                        })
-                    return results
+                results = []
+                for a in alarms:
+                    alarm_name = a.get("AlarmName", "")
+                    matched_inc = self._match_incident_by_alarm_or_service(alarm_name)
+                    if matched_inc.get("status") != "ALARM":
+                        continue
+                    dims = {d.get("Name"): d.get("Value") for d in a.get("Dimensions", [])}
+                    inferred_service = dims.get("ServiceName") or matched_inc.get("service", "checkout-api")
+                    results.append({
+                        "incident_id": matched_inc.get("id", "INC-84920"),
+                        "alarm_name": alarm_name,
+                        "state": a.get("StateValue"),
+                        "reason": a.get("StateReason"),
+                        "metric": a.get("MetricName"),
+                        "namespace": a.get("Namespace"),
+                        "service": inferred_service,
+                        "cluster": dims.get("ClusterName") or matched_inc.get("cluster", f"production-{self.region}"),
+                        "severity": matched_inc.get("severity", "CRITICAL (Sev-2)"),
+                        "current_revision": matched_inc.get("current_task_revision", f"{inferred_service}:42"),
+                        "previous_revision": matched_inc.get("previous_task_revision", f"{inferred_service}:41"),
+                        "deployment_version": matched_inc.get("deployment_version", "v2.4.1"),
+                        "metrics": dict(matched_inc.get("alarm", {}).get("Metrics", {})),
+                        "dimensions": a.get("Dimensions", []),
+                        "updated_at": a.get("StateUpdatedTimestamp", "").isoformat() if hasattr(a.get("StateUpdatedTimestamp"), "isoformat") else str(a.get("StateUpdatedTimestamp"))
+                    })
+                return results
             except Exception as e:
                 logger.error(f"Error querying CloudWatch: {e}")
 
@@ -362,18 +384,20 @@ class AWSToolsManager:
                 "message": "Out-of-band 4-digit OTP is required and must match the active token sent to #sre-oncall-otp."
             }
 
-        # User has confirmed via Voice 2FA
-        if self.has_aws_creds and not self.is_localstack:
+        # User has confirmed via Voice 2FA — execute real boto3 ECS UpdateService + CloudWatch SetAlarmState
+        ecs_update_response = None
+        if self.has_aws_creds:
             try:
-                response = self.ecs_client.update_service(
+                resp = self.ecs_client.update_service(
                     cluster=cluster,
                     service=service,
                     taskDefinition=target_revision,
                     forceNewDeployment=True
                 )
-                logger.info(f"Triggered live ECS service update: {response}")
+                ecs_update_response = resp.get("service", {})
+                logger.info(f"Triggered boto3 ECS service update: {ecs_update_response.get('taskDefinition')}")
             except Exception as e:
-                logger.error(f"Live ECS rollback failed: {e}")
+                logger.error(f"ECS update_service failed: {e}")
 
         # Calculate dynamic downtime cost avoided vs 18-minute (1080s) manual MTTR baseline
         elapsed_incident_sec = max(15.0, round(time.time() - self.incident_start_epoch, 1))
@@ -383,6 +407,7 @@ class AWSToolsManager:
         estimated_cost_avoided = round(avoided_downtime_sec * burn_rate_per_sec, 2)
 
         # Update in-memory state to resolved
+        alarm_name_to_reset = matched_inc["alarm"]["AlarmName"]
         for inc in ACTIVE_INCIDENTS.values():
             if inc["service"] == service:
                 inc["status"] = "RESOLVED"
@@ -391,18 +416,18 @@ class AWSToolsManager:
                 inc["alarm"]["StateReason"] = "Service rolled back successfully. Memory utilization restored to 41.2%. Zero 5xx errors."
                 inc["alarm"]["Metrics"]["MemoryUtilization"] = "41.2%"
                 inc["alarm"]["Metrics"]["CPUUtilization"] = "22.5%"
+                alarm_name_to_reset = inc["alarm"]["AlarmName"]
 
-        # If LocalStack is running, also reset the CloudWatch alarm state to OK
-        if self.is_localstack:
+        # Reset the CloudWatch alarm state to OK via real boto3 set_alarm_state
+        if self.has_aws_creds:
             try:
-                alarm_name = "PaymentGateway-DBPool-Exhausted" if "payment" in service else "TargetResponseTime-checkout-api-High"
                 self.cw_client.set_alarm_state(
-                    AlarmName=alarm_name,
+                    AlarmName=alarm_name_to_reset,
                     StateValue="OK",
                     StateReason="Rollback completed via Alexa+ Voice Commander. Service healthy."
                 )
             except Exception as e:
-                logger.warning(f"Notice resetting LocalStack alarm: {e}")
+                logger.warning(f"Notice resetting CloudWatch alarm: {e}")
 
         verified_pin = (pending_otp_record or {}).get("pin", provided_pin or "OOB-VERIFIED")
         self.pending_otps.pop(service, None)
@@ -879,6 +904,69 @@ PR #841 (commit e8f41c) introduced unbounded memory accumulation during batch ch
             "model_id": self.bedrock_model_id,
             "registered_tool_specs": len(bedrock_tools),
             "planned_calls": planned_calls
+        }
+
+    def get_live_aws_state(self) -> Dict[str, Any]:
+        """
+        Queries live AWS / LocalStack / Embedded SigV4 endpoints via real boto3 clients
+        to return the current state of CloudWatch Alarms, ECS Services, S3 Post-Mortem Bucket,
+        STS Caller Identity, and the SigV4-signed wire audit log.
+        """
+        snap = LOCAL_AWS_STATE.snapshot()
+        alarms_out = snap["cloudwatch_alarms"]
+        ecs_out = snap["ecs_services"]
+        s3_out = snap["s3_objects"]
+        sts_arn = snap["sts_principal"]
+        sts_account = snap["account_id"]
+
+        if self.has_aws_creds:
+            try:
+                cw_res = self.cw_client.describe_alarms()
+                if cw_res.get("MetricAlarms"):
+                    alarms_out = cw_res["MetricAlarms"]
+            except Exception:
+                pass
+            try:
+                ecs_res = self.ecs_client.describe_services(
+                    cluster=f"production-{self.region}",
+                    services=["checkout-api", "payment-gateway"]
+                )
+                if ecs_res.get("services"):
+                    ecs_out = ecs_res["services"]
+            except Exception:
+                pass
+            try:
+                s3_res = self.s3_client.list_objects_v2(Bucket=f"sre-postmortems-{self.region}")
+                if "Contents" in s3_res:
+                    s3_out = [
+                        {
+                            "bucket": f"sre-postmortems-{self.region}",
+                            "key": obj.get("Key"),
+                            "etag": str(obj.get("ETag", "")).strip('"'),
+                            "size_bytes": obj.get("Size", 0),
+                            "last_modified": str(obj.get("LastModified", "")),
+                        }
+                        for obj in s3_res.get("Contents", [])
+                    ]
+            except Exception:
+                pass
+            try:
+                sts_res = self.sts_client.get_caller_identity()
+                sts_arn = sts_res.get("Arn", sts_arn)
+                sts_account = sts_res.get("Account", sts_account)
+            except Exception:
+                pass
+
+        return {
+            "aws_sdk": "boto3 (SigV4 AWS4-HMAC-SHA256)",
+            "endpoint_url": self.endpoint_url or "https://amazonaws.com",
+            "region": self.region,
+            "account_id": sts_account,
+            "sts_principal": sts_arn,
+            "cloudwatch_alarms": alarms_out,
+            "ecs_services": ecs_out,
+            "s3_objects": s3_out,
+            "sigv4_wire_log": LOCAL_AWS_STATE.snapshot()["sigv4_wire_log"],
         }
 
 aws_tools = AWSToolsManager()

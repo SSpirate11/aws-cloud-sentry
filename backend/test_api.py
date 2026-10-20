@@ -183,6 +183,36 @@ def test_alexa_skills_kit_webhook():
     assert data["sessionAttributes"]["mcp_tool_count"] == 3
     print("✓ Test 14 (Alexa Skills Kit v1.0 Webhook) passed: Spec-compliant ASK JSON response verified")
 
+def test_external_mcp_streamable_http_and_boto3_state():
+    with TestClient(app) as mcp_client:
+        headers = {
+            "Accept": "application/json, text/event-stream",
+            "Content-Type": "application/json"
+        }
+        r_init = mcp_client.post("/mcp", json={
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "External-MCP-Judge-Suite", "version": "1.0.0"}
+            }
+        }, headers=headers)
+        assert r_init.status_code == 200
+        sid = r_init.headers.get("mcp-session-id")
+        assert sid
+        headers["mcp-session-id"] = sid
+        mcp_client.post("/mcp", json={"jsonrpc": "2.0", "method": "notifications/initialized"}, headers=headers)
+        r_list = mcp_client.post("/mcp", json={"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}, headers=headers)
+        assert r_list.status_code == 200
+        assert len(r_list.json()["result"]["tools"]) == 9
+        r_aws = mcp_client.get("/api/aws-state")
+        assert r_aws.status_code == 200
+        aws_state = r_aws.json()
+        assert len(aws_state["sigv4_wire_log"]) > 0
+        print(f"✓ Test 15 (External /mcp Streamable HTTP + Boto3 SigV4 State) passed: session={sid[:12]}..., SigV4 calls={len(aws_state['sigv4_wire_log'])}")
+
 if __name__ == "__main__":
     print("========================================")
     print("Running CloudSentry Automated Test Suite")
@@ -200,8 +230,9 @@ if __name__ == "__main__":
     test_generate_incident_postmortem()
     test_proactive_3am_page()
     test_alexa_skills_kit_webhook()
+    test_external_mcp_streamable_http_and_boto3_state()
     print("========================================")
-    print("ALL 15 END-TO-END TESTS PASSED (100% OK)!")
+    print("ALL 16 END-TO-END TESTS PASSED (100% OK)!")
     print("========================================")
 
 

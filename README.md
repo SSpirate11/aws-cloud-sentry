@@ -120,17 +120,29 @@ git clone https://github.com/SSpirate11/aws-cloud-sentry.git
 cd aws-cloud-sentry
 ```
 
-### 2. Start with One Command
+### 2. Start with One Command ($0.00 Cost, Real Boto3 SigV4 Enabled by Default)
 ```bash
 chmod +x run.sh
 ./run.sh
 ```
 Open `http://localhost:5173` in Chrome or Edge.
-* Backend MCP Endpoint: `http://localhost:8000/mcp`
+* Backend MCP Streamable HTTP Endpoint: `http://localhost:8000/mcp`
 * Runtime MCP Tool Registry: `http://localhost:8000/api/mcp-tools`
+* Live Boto3 Resource State & SigV4 Wire Log: `http://localhost:8000/api/aws-state`
 * Voice Turn API: `http://localhost:8000/api/voice-turn`
 
-### 3. Optional: Run Against LocalStack (Real boto3 Calls)
+By default, the backend automatically starts the zero-cost embedded AWS SigV4 HTTP endpoint (`backend/local_aws_emulator.py`) so all 5 `boto3` clients (`cloudwatch`, `logs`, `ecs`, `s3`, `sts`) sign real `AWS4-HMAC-SHA256` requests and mutate live CloudWatch Alarms, ECS Services, and S3 Post-Mortem objects without requiring paid AWS credentials or Docker.
+
+### 3. Verify External MCP Client Handshake & Boto3 State ($0.00 Cost)
+```bash
+PYTHONPATH=backend ./backend/venv/bin/python backend/verify_mcp_client.py
+```
+Or connect Anthropic MCP Inspector directly to the Streamable HTTP endpoint:
+```bash
+npx @modelcontextprotocol/inspector http://localhost:8000/mcp
+```
+
+### 4. Optional: Run Against Docker LocalStack or Live AWS
 ```bash
 docker compose up -d
 ./backend/venv/bin/python backend/seed_localstack.py
@@ -143,21 +155,22 @@ AWS_ENDPOINT_URL=http://localhost:4566 ./run.sh
 
 1. **Proactive 3 AM Wake-Up (Optional):** Click **3 AM Page** in the top bar to simulate an incoming Sev-1 page waking up the Echo Show.
 2. **Triage the Outage:** Say or click `"Alexa, what is failing in production?"`
-   * Executes `get_active_alarms`, `fetch_error_logs`, and `diagnose_incident` via MCP.
+   * Executes `get_active_alarms`, `fetch_error_logs`, and `diagnose_incident` via MCP and `boto3`.
    * Displays the 99.4% memory spike on `checkout-api` (or ask `"Alexa, check payment-gateway"` to inspect the DB connection pool outage).
-3. **Forensic Git Blame:** Say or click `"Alexa, who broke production?"`
-   * Executes `trace_deployment_culprit` to inspect commit `e8f41c9`, the 11-second PR approval, and the Friday deploy freeze guardrail.
-4. **Digital Twin Blast-Radius Check:** Say or click `"Alexa, simulate blast radius"`
-   * Executes `simulate_blast_radius` at 12,400 RPS and arms the 300-second JIT IAM session policy.
-5. **Voice 2FA Rollback:** Say or click `"Alexa, rollback checkout-api"` followed by `"Alexa, confirm rollback"` (or PIN `4921`).
-   * Verifies VoiceID and PIN `4921`, rolls back ECS to `checkout-api:41`, stops the revenue bleed counter, and posts the audit log to Slack.
-6. **Code Hotfix & S3 Post-Mortem:** Ask `"Alexa, propose code fix"` and `"Alexa, generate post-mortem"` to view the unified Git diff and S3-archived incident report.
+3. **Blameless COE Change Correlation:** Say or click `"Alexa, correlate deployment changes"`
+   * Executes `trace_deployment_culprit` to inspect real `git log` commit history and generate an Amazon Blameless Correction of Errors (COE) 5-Whys analysis.
+4. **Deterministic N-1 Pre-Flight Check:** Say or click `"Alexa, verify pre-flight impact"`
+   * Executes `simulate_blast_radius` to compute the N-1 memory/CPU recovery delta (`99.4% -> 41.2%`) and build a least-privilege AWS STS IAM Session Policy.
+5. **Out-of-Band Slack OTP Rollback:** Say or click `"Alexa, rollback checkout-api"` followed by `"Alexa, confirm rollback <PIN>"` using the dynamic 4-digit OTP delivered out-of-band to `#sre-oncall-otp`.
+   * Executes `ecs.update_service` (`checkout-api:42 -> checkout-api:41`) and `cloudwatch.set_alarm_state` (`ALARM -> OK`) via `boto3`, stops the revenue bleed counter, and posts the audit log to Slack.
+6. **Code Hotfix & S3 Post-Mortem:** Ask `"Alexa, propose code fix"` and `"Alexa, generate post-mortem"` to view the unified Git diff and upload the Markdown post-mortem to `s3://sre-postmortems-us-east-1/2026/INC-84920.md`.
+7. **Live Boto3 + `/mcp` Wire Inspection:** Click **AWS + /mcp** in the right-hand Telemetry HUD to view the live CloudWatch/ECS/S3 resource states, signed `AWS4-HMAC-SHA256` calls, and trigger a live browser-to-`/mcp` Streamable HTTP client handshake.
 
 ---
 
 ## Automated Verification Suite
 
-Run all 15 end-to-end tests:
+Run all 16 end-to-end tests:
 ```bash
 PYTHONPATH=backend ./backend/venv/bin/python backend/test_api.py
 ```
@@ -178,7 +191,8 @@ Test 9  (MCP Tool: propose_code_fix) passed: Unified Git diff generated
 Test 10 (MCP Tool: generate_incident_postmortem) passed: Report published
 Test 13 (Proactive 3 AM PagerDuty Wake-Up Push) passed: Ambient SRE alert verified
 Test 14 (Alexa Skills Kit v1.0 Webhook) passed: Spec-compliant ASK JSON response verified
-ALL 15 END-TO-END TESTS PASSED (100% OK)!
+Test 15 (External /mcp Streamable HTTP + Boto3 SigV4 State) passed
+ALL 16 END-TO-END TESTS PASSED (100% OK)!
 ```
 
 ---

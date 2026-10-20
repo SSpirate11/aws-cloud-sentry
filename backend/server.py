@@ -9,6 +9,7 @@ Mounts both:
 import json
 import logging
 import re
+from contextlib import asynccontextmanager
 from typing import Dict, Any, List, Optional
 
 from pydantic import BaseModel
@@ -18,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mcp.server.mcpserver import MCPServer
 
 from aws_tools import aws_tools, ACTIVE_INCIDENTS
+from local_aws_emulator import LOCAL_AWS_STATE
 from mock_scenarios import MOCK_SCENARIOS
 
 # Configure logging
@@ -122,11 +124,25 @@ def simulate_blast_radius(service: str = "checkout-api", target_revision: str = 
     return json.dumps(res, indent=2)
 
 
-# 2. Initialize FastAPI Application
+# 2. Initialize Official MCP Streamable HTTP Transport (/mcp) & FastAPI Lifespan
+mcp_app = mcp.streamable_http_app(
+    streamable_http_path="/mcp",
+    json_response=True,
+    host="0.0.0.0"
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with mcp_app.router.lifespan_context(mcp_app):
+        yield
+
+
 app = FastAPI(
     title="AWS CloudSentry - Alexa+ Incident Commander",
     description="Model Context Protocol (MCP) Streamable HTTP Server & Voice Simulator API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -135,11 +151,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["mcp-session-id"],
 )
 
-# Mount the official MCP Streamable HTTP application
-mcp_app = mcp.streamable_http_app()
-app.mount("/mcp", mcp_app)
+for route in mcp_app.routes:
+    app.router.routes.append(route)
 
 
 # 3. Conversational Voice Agent API for the Alexa+ Web Simulator
@@ -682,6 +698,7 @@ async def trigger_proactive_3am_page():
     Simulates a proactive 3:14 AM PagerDuty / CloudWatch SNS event pushing an
     ambient wake-up page to the SRE's bedside Echo Show before the user even speaks.
     """
+    LOCAL_AWS_STATE.reset()
     ACTIVE_INCIDENTS["INC-84920"] = json.loads(json.dumps(MOCK_SCENARIOS["checkout_api_oom"]))
     tool_traces: List[Dict[str, Any]] = []
     alarms = await invoke_mcp_tool("get_active_alarms", {}, tool_traces)
@@ -783,15 +800,29 @@ async def alexa_skills_kit_webhook(request: Request):
         }
     }
 
+@app.get("/api/aws-state")
+async def get_live_aws_state():
+    """Returns real-time AWS CloudWatch Alarms, ECS Services, S3 Objects, STS Identity, and SigV4 Wire Log via boto3."""
+    return aws_tools.get_live_aws_state()
+
+
 @app.post("/api/reset")
 async def reset_scenario():
-    """Resets the mock scenarios back to initial alarm state for clean demo recordings."""
+    """Resets the mock scenarios and local AWS SigV4 emulator back to initial alarm state for clean demo recordings."""
+    LOCAL_AWS_STATE.reset()
+    LOCAL_AWS_STATE.reset()
     ACTIVE_INCIDENTS["INC-84920"] = json.loads(json.dumps(MOCK_SCENARIOS["checkout_api_oom"]))
     ACTIVE_INCIDENTS["INC-84921"] = json.loads(json.dumps(MOCK_SCENARIOS["payments_db_pool_exhausted"]))
+    aws_tools.pending_otps.clear()
     SESSION_CONTEXT["pending_rollback"] = None
     SESSION_CONTEXT["current_incident"] = "INC-84920"
     SESSION_CONTEXT["current_service"] = "checkout-api"
-    return {"status": "RESET_SUCCESS", "current_incident": ACTIVE_INCIDENTS["INC-84920"]}
+    return {
+        "status": "RESET_SUCCESS",
+        "current_incident": ACTIVE_INCIDENTS["INC-84920"],
+        "aws_state": aws_tools.get_live_aws_state()
+    }
+
 
 @app.get("/api/health")
 async def health_check():
@@ -800,6 +831,7 @@ async def health_check():
         "spec_version": "2025-11-25+",
         "protocol": "Streamable HTTP",
         "mcp_endpoint": "/mcp",
-        "aws_connected": aws_tools.has_aws_creds
+        "aws_connected": aws_tools.has_aws_creds,
+        "aws_endpoint": aws_tools.endpoint_url or "https://amazonaws.com"
     }
 
