@@ -289,7 +289,30 @@ class AWSToolsManager:
         """
         matched_inc = self._match_incident_by_alarm_or_service(service)
         alarm_is_active = matched_inc.get("status") == "ALARM"
-        sts_session = self._build_scoped_sts_policy(service, cluster, target_revision, alarm_is_active)
+        allowed_n_minus_1 = matched_inc.get("previous_task_revision", target_revision)
+        sts_session = self._build_scoped_sts_policy(service, cluster, allowed_n_minus_1, alarm_is_active)
+
+        # Guardrail 1: Refuse mutation if service is not currently in ALARM state
+        if not alarm_is_active:
+            return {
+                "status": "REJECTED_NO_ACTIVE_ALARM",
+                "service": service,
+                "cluster": cluster,
+                "message": f"Guardrail blocked rollback: '{service}' has no active CloudWatch ALARM.",
+                "jit_iam_policy": sts_session
+            }
+
+        # Guardrail 2: Refuse mutation to any revision other than the N-1 known-good task definition
+        if target_revision != allowed_n_minus_1:
+            return {
+                "status": "REJECTED_REVISION_NOT_ALLOWED",
+                "service": service,
+                "cluster": cluster,
+                "requested_revision": target_revision,
+                "allowed_revision": allowed_n_minus_1,
+                "message": f"Guardrail blocked rollback: Only N-1 task definition '{allowed_n_minus_1}' is permitted.",
+                "jit_iam_policy": sts_session
+            }
 
         if not confirmed:
             # Generate a fresh cryptographic 4-digit OTP per rollback request
@@ -325,15 +348,19 @@ class AWSToolsManager:
                 "jit_iam_policy": sts_session
             }
 
-        # Verify OTP if provided and a pending OTP exists
+        # Guardrail 3: Strictly require a pending OTP and matching provided_pin on confirmed=True
         pending_otp_record = self.pending_otps.get(service)
-        if provided_pin and pending_otp_record:
-            if provided_pin != pending_otp_record["pin"]:
-                return {
-                    "status": "REJECTED_INVALID_PIN",
-                    "service": service,
-                    "message": f"Out-of-band PIN mismatch. Expected PIN sent to #sre-oncall-otp."
-                }
+        if (
+            not pending_otp_record
+            or not provided_pin
+            or provided_pin != pending_otp_record["pin"]
+            or time.time() > pending_otp_record["expires_at"]
+        ):
+            return {
+                "status": "REJECTED_INVALID_PIN",
+                "service": service,
+                "message": "Out-of-band 4-digit OTP is required and must match the active token sent to #sre-oncall-otp."
+            }
 
         # User has confirmed via Voice 2FA
         if self.has_aws_creds and not self.is_localstack:

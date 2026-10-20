@@ -270,15 +270,15 @@ async def handle_voice_turn(req: VoiceQueryRequest):
         pending = SESSION_CONTEXT["pending_rollback"]
         expected_pin = pending.get("challenge_pin")
 
-        # If the user explicitly spoke a 4-digit PIN, enforce strict cryptographic match
-        if spoken_pin and expected_pin and spoken_pin != expected_pin:
+        # Strictly require the 4-digit out-of-band OTP to match
+        if not spoken_pin or (expected_pin and spoken_pin != expected_pin):
             return {
                 "spoken_response": (
-                    "Out-of-band security PIN mismatch. Rollback aborted. "
-                    "Please check the one-time 4-digit code delivered to #sre-oncall-otp in Slack."
+                    "Out-of-band security PIN required. Rollback halted. "
+                    "Please check the one-time 4-digit code delivered to #sre-oncall-otp in Slack and speak 'Confirm rollback' followed by that code."
                 ),
                 "display_card": {
-                    "title": "Out-of-Band 2FA PIN Mismatch",
+                    "title": "Out-of-Band 2FA PIN Required",
                     "badge": "PIN REJECTED",
                     "badge_color": "red",
                     "service": pending["service"],
@@ -287,7 +287,7 @@ async def handle_voice_turn(req: VoiceQueryRequest):
                     "challenge_pin": expected_pin,
                     "oob_delivery_channel": "#sre-oncall-otp (Slack Out-of-Band)",
                     "jit_iam_policy": pending.get("jit_iam_policy"),
-                    "status_message": "Spoken 4-digit PIN did not match the active out-of-band token."
+                    "status_message": "A valid 4-digit out-of-band OTP from #sre-oncall-otp is required to authorize rollback."
                 },
                 "state": "AWAITING_CONFIRMATION",
                 "planner": planner_meta,
@@ -302,7 +302,7 @@ async def handle_voice_turn(req: VoiceQueryRequest):
                 "cluster": pending["cluster"],
                 "target_revision": pending["target_revision"],
                 "confirmed": True,
-                "provided_pin": spoken_pin or expected_pin
+                "provided_pin": spoken_pin
             },
             tool_traces
         )
