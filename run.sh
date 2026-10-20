@@ -39,9 +39,13 @@ if [ "$1" == "--local-aws" ]; then
     export AWS_ENDPOINT_URL=http://127.0.0.1:4566
 fi
 
+# Clean up any stale processes holding port 8000 or 5173
+fuser -k 8000/tcp >/dev/null 2>&1 || true
+fuser -k 5173/tcp >/dev/null 2>&1 || true
+
 # 1. Start Python MCP Backend
 echo "[1/2] Launching Python MCP Server on http://localhost:8000..."
-uvicorn server:app --host 0.0.0.0 --port 8000 --reload &
+./venv/bin/uvicorn server:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 trap "echo 'Shutting down CloudSentry...'; kill $BACKEND_PID $MOTO_PID 2>/dev/null; exit" SIGINT SIGTERM EXIT

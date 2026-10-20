@@ -1,9 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
+import EchoRing from './EchoRing';
 
 export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) {
   const containerRef = useRef(null);
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const [isInteracting, setIsInteracting] = useState(false);
+  const [webglError, setWebglError] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -21,8 +25,14 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
     camera.position.set(0, 1.4, 4.2);
     camera.lookAt(0, 0, 0);
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Renderer (wrapped in try/catch for browsers without hardware WebGL)
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch (e) {
+      setWebglError(true);
+      return;
+    }
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -252,33 +262,34 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
       echoGroup.rotation.x += (targetRotationX - echoGroup.rotation.x) * 0.08;
 
       // Dynamic LED Ring Behavior by State
-      const currentColor = getStateColor(state);
+      const curState = stateRef.current;
+      const currentColor = getStateColor(curState);
       ringMaterial.color.setHex(currentColor);
       ringMaterial.emissive.setHex(currentColor);
       ringLight.color.setHex(currentColor);
       rimLight.color.setHex(currentColor);
 
-      if (state === 'LISTENING') {
+      if (curState === 'LISTENING') {
         // Fast lively pulsing listening beam
         const pulse = 1.8 + Math.sin(elapsedTime * 6.0) * 0.9;
         ringMaterial.emissiveIntensity = pulse;
         ringLight.intensity = pulse * 1.8;
-      } else if (state === 'THINKING') {
+      } else if (curState === 'THINKING') {
         // Dual-beam fast spinning light
         const pulse = 2.0 + Math.sin(elapsedTime * 9.0) * 1.1;
         ringMesh.rotation.z = elapsedTime * 4.5;
         ringMaterial.emissiveIntensity = pulse;
         ringLight.intensity = pulse * 1.6;
-      } else if (state === 'AWAITING_CONFIRMATION') {
+      } else if (curState === 'AWAITING_CONFIRMATION') {
         // Pulsing urgent amber warning
         const pulse = 2.2 + Math.sin(elapsedTime * 4.5) * 1.0;
         ringMaterial.emissiveIntensity = pulse;
         ringLight.intensity = pulse * 2.0;
-      } else if (state === 'RESOLVED') {
+      } else if (curState === 'RESOLVED') {
         // Serene steady emerald green
         ringMaterial.emissiveIntensity = 2.4;
         ringLight.intensity = 3.6;
-      } else if (state === 'INCIDENT_ACTIVE') {
+      } else if (curState === 'INCIDENT_ACTIVE') {
         // Red alarm pulse
         const pulse = 2.0 + Math.sin(elapsedTime * 5.0) * 1.0;
         ringMaterial.emissiveIntensity = pulse;
@@ -334,7 +345,11 @@ export default function Echo3D({ state, isListening, isSpeaking, onToggleMic }) 
         domEl.parentNode.removeChild(domEl);
       }
     };
-  }, [state]);
+  }, []);
+
+  if (webglError) {
+    return <EchoRing state={state} isListening={isListening} isSpeaking={isSpeaking} onToggleMic={onToggleMic} />;
+  }
 
   const getStatusLabel = () => {
     if (isSpeaking) return 'Alexa+ Speaking...';
