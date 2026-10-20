@@ -28,6 +28,21 @@ def seed():
         aws_access_key_id="test",
         aws_secret_access_key="test"
     )
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=LOCALSTACK_URL,
+        region_name="us-east-1",
+        aws_access_key_id="test",
+        aws_secret_access_key="test"
+    )
+
+    # 0. Create S3 Bucket for Post-Mortem Archival
+    bucket_name = "sre-postmortems-us-east-1"
+    try:
+        s3.create_bucket(Bucket=bucket_name)
+        print(f"✓ Created S3 Bucket: s3://{bucket_name}")
+    except Exception as e:
+        print(f"• S3 Bucket {bucket_name} ready ({e})")
 
     # 1. Create CloudWatch Log Group
     log_group = "/ecs/checkout-api"

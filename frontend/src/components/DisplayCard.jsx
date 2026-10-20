@@ -399,12 +399,15 @@ export default function DisplayCard({ card, state }) {
               </div>
 
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: '700', color: '#fbbf24', fontSize: '0.78rem' }}>
                     VOICE 2FA AUTHORIZATION GATE
                   </span>
                   <span style={{ fontSize: '0.62rem', padding: '1px 4px', borderRadius: '3px', background: 'rgba(245,158,11,0.25)', color: '#fef3c7', fontWeight: '700' }}>
                     MUTATION INTERLOCK
+                  </span>
+                  <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '3px', background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', fontWeight: '700', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+                    ✓ {card.voice_biometric || 'VoiceID: SRE-Primary-OnCall (99.4%)'}
                   </span>
                 </div>
 
@@ -415,7 +418,7 @@ export default function DisplayCard({ card, state }) {
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.35rem',
+                  gap: '0.45rem',
                   marginTop: '0.25rem',
                   padding: '0.2rem 0.55rem',
                   borderRadius: '4px',
@@ -426,6 +429,10 @@ export default function DisplayCard({ card, state }) {
                 }}>
                   <span>👉 Speak into Alexa:</span>
                   <span style={{ color: '#fbbf24', fontWeight: '700' }}>"Confirm rollback"</span>
+                  <span style={{ color: '#94a3b8', fontSize: '0.65rem' }}>or PIN</span>
+                  <code style={{ color: '#38bdf8', fontWeight: '800', background: 'rgba(0, 210, 255, 0.12)', padding: '1px 4px', borderRadius: '3px' }}>
+                    {card.challenge_pin || '4921'}
+                  </code>
                 </div>
               </div>
             </div>
