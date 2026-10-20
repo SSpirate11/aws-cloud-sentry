@@ -381,9 +381,9 @@ async def handle_voice_turn(req: VoiceQueryRequest):
         )
 
         spoken = (
-            f"Following Amazon's Blameless Correction of Errors methodology, I correlated recent pipeline changes for {service} rather than blaming individuals. "
+            f"Change correlation complete for {service}. "
             f"Deployment {culprit_res['deployment_version']} commit {culprit_res['commit_sha']} bypassed a canary memory soak test. "
-            f"I have generated a 5-Whys analysis and configured an automated ECS deployment circuit breaker."
+            f"I have generated a 5-Whys root-cause audit and configured an automated ECS deployment circuit breaker."
         )
 
         return {
