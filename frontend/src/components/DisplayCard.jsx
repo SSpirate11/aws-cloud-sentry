@@ -14,6 +14,8 @@ export default function DisplayCard({ card, state }) {
   const isResolved = state === 'RESOLVED';
   const isCodeFix = state === 'CODE_FIX_READY' || !!card.git_patch;
   const isPostMortem = state === 'POSTMORTEM_GENERATED' || !!card.postmortem_markdown;
+  const isCulprit = state === 'CULPRIT_IDENTIFIED' || !!card.culprit_data;
+  const isBlastRadius = state === 'BLAST_RADIUS_VERIFIED' || !!card.blast_radius_data;
 
   const borderColor = isCodeFix 
     ? '#00d2ff' 
@@ -290,8 +292,126 @@ export default function DisplayCard({ card, state }) {
         </div>
       )}
 
+      {/* VIEW B2: 3 AM Forensic Git Blame & SRE Coffee Bounty Card */}
+      {card.culprit_data && (
+        <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '0.35rem'
+          }}>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Offending Commit</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#fbbf24', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.culprit_data.commit_sha} ({card.culprit_data.pr_number})
+              </div>
+              <div style={{ fontSize: '0.62rem', color: '#cbd5e1', marginTop: '1px' }}>{card.culprit_data.author}</div>
+            </div>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(244, 63, 94, 0.3)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>PR Review Speed</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#fb7185', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                ⚡ {card.culprit_data.pr_approval_time}
+              </div>
+              <div style={{ fontSize: '0.62rem', color: '#fda4af', marginTop: '1px' }}>"{card.culprit_data.pr_comment}"</div>
+            </div>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Deploy Timestamp</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#c084fc', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.culprit_data.deployed_at}
+              </div>
+              <div style={{ fontSize: '0.6rem', color: '#e9d5ff', marginTop: '1px' }}>{card.culprit_data.ci_skipped}</div>
+            </div>
+          </div>
+
+          <div style={{
+            background: '#040711',
+            borderRadius: '6px',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            padding: '0.4rem 0.6rem',
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '0.68rem',
+            color: '#f8fafc'
+          }}>
+            <div style={{ color: '#94a3b8', fontSize: '0.6rem', marginBottom: '2px' }}>git log -n 1 --stat {card.culprit_data.commit_sha}</div>
+            <div style={{ color: '#fcd34d', fontWeight: '700' }}>"{card.culprit_data.commit_message}"</div>
+            <div style={{ color: '#fb7185', fontSize: '0.63rem', marginTop: '4px' }}>
+              😴 Sleep Disruption Index: <strong>{card.culprit_data.sleep_disruption_score}</strong> • Reviewer: <strong>{card.culprit_data.pr_reviewer}</strong>
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(16, 185, 129, 0.12))',
+            padding: '0.4rem 0.6rem',
+            borderRadius: '6px',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            fontSize: '0.68rem'
+          }}>
+            <div>
+              <div style={{ color: '#fef3c7', fontWeight: '800' }}>
+                ☕ SRE Reparation Bounty: <span style={{ color: '#34d399' }}>{card.culprit_data.coffee_bounty}</span>
+              </div>
+              <div style={{ color: '#cbd5e1', fontSize: '0.62rem', marginTop: '2px' }}>
+                🛡️ Guardrail Enforced: {card.culprit_data.automated_guardrail}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW B3: Digital Twin Canary Pre-Flight & JIT IAM Session Policy Card */}
+      {card.blast_radius_data && (
+        <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '0.35rem'
+          }}>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(0, 210, 255, 0.25)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Synthetic Traffic</div>
+              <div style={{ fontSize: '0.76rem', fontWeight: '800', color: '#38bdf8', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>12,400 RPS</div>
+            </div>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>OOM Risk</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>
+                {card.blast_radius_data.oom_probability}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Predicted RAM</div>
+              <div style={{ fontSize: '0.76rem', fontWeight: '800', color: '#34d399', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>39.8% Peak</div>
+            </div>
+            <div style={{ background: 'rgba(5, 8, 16, 0.75)', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(0, 210, 255, 0.25)' }}>
+              <div style={{ fontSize: '0.56rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700' }}>Canary p99</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#38bdf8', fontFamily: 'JetBrains Mono', marginTop: '2px' }}>34ms</div>
+            </div>
+          </div>
+
+          {card.blast_radius_data.jit_iam_session && (
+            <div style={{
+              background: '#040711',
+              borderRadius: '6px',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              padding: '0.45rem 0.65rem',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '0.64rem',
+              color: '#cbd5e1'
+            }}>
+              <div style={{ color: '#34d399', fontWeight: '700', marginBottom: '3px' }}>
+                🔒 Just-In-Time (JIT) Alarm-Scoped AWS STS Session Policy Armed (TTL: {card.blast_radius_data.jit_iam_session.ttl_seconds}s)
+              </div>
+              <div>Role ARN: <span style={{ color: '#38bdf8' }}>{card.blast_radius_data.jit_iam_session.role_arn}</span></div>
+              <div>Resource: <span style={{ color: '#e2e8f0' }}>{card.blast_radius_data.jit_iam_session.scoped_resource}</span></div>
+              <div>Guardrail: <span style={{ color: '#fbbf24' }}>{card.blast_radius_data.jit_iam_session.alarm_condition}</span></div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* VIEW C: Real-time Telemetry & CloudWatch Metrics (Default Incident View) */}
-      {!card.git_patch && !card.postmortem_markdown && (
+      {!card.git_patch && !card.postmortem_markdown && !card.culprit_data && !card.blast_radius_data && (
         <>
           {/* Real-time Interactive SVG CloudWatch Metric Graph */}
           <MetricChart state={state} currentRev={card.current_revision} />

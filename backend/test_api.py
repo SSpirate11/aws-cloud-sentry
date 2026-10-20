@@ -24,11 +24,13 @@ def test_mcp_runtime_tool_discovery():
     res = client.get("/api/mcp-tools")
     assert res.status_code == 200
     data = res.json()
-    assert data["tool_count"] == 7
+    assert data["tool_count"] == 9
     tool_names = [t["name"] for t in data["tools"]]
     assert "get_active_alarms" in tool_names
     assert "propose_code_fix" in tool_names
     assert "generate_incident_postmortem" in tool_names
+    assert "trace_deployment_culprit" in tool_names
+    assert "simulate_blast_radius" in tool_names
     print(f"✓ Test 2 (MCP Runtime Introspection) passed: {data['tool_count']} MCP tools registered")
 
 def test_incident_triage_turn():
@@ -119,6 +121,33 @@ def test_generate_incident_postmortem():
     assert data["tool_traces"][0]["protocol"] == "MCP-2025-11-25+"
     print("✓ Test 10 (MCP Tool: generate_incident_postmortem) passed: Report published")
 
+def test_trace_deployment_culprit():
+    res = client.post("/api/voice-turn", json={"query": "Alexa, who broke production?"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["state"] == "CULPRIT_IDENTIFIED"
+    assert "culprit_data" in data["display_card"]
+    assert data["tool_traces"][0]["tool"] == "trace_deployment_culprit"
+    print("✓ Test 11 (MCP Tool: trace_deployment_culprit) passed: Forensic Git blame & coffee bounty")
+
+def test_simulate_blast_radius():
+    res = client.post("/api/voice-turn", json={"query": "Alexa, simulate blast radius"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["state"] == "BLAST_RADIUS_VERIFIED"
+    assert "blast_radius_data" in data["display_card"]
+    assert data["tool_traces"][0]["tool"] == "simulate_blast_radius"
+    print("✓ Test 12 (MCP Tool: simulate_blast_radius) passed: Digital twin 12.4k RPS canary & JIT IAM")
+
+def test_proactive_3am_page():
+    res = client.post("/api/proactive-alert")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["state"] == "INCIDENT_ACTIVE"
+    assert "Wake up" in data["spoken_response"]
+    assert len(data["tool_traces"]) == 3
+    print("✓ Test 13 (Proactive 3 AM PagerDuty Wake-Up Push) passed: Ambient SRE alert verified")
+
 if __name__ == "__main__":
     print("========================================")
     print("Running CloudSentry Automated Test Suite")
@@ -129,12 +158,15 @@ if __name__ == "__main__":
     test_incident_triage_turn()
     test_off_script_dynamic_qa()
     test_multi_service_payment_gateway()
+    test_trace_deployment_culprit()
+    test_simulate_blast_radius()
     test_rollback_safety_gate()
     test_rollback_confirmation()
     test_propose_code_fix()
     test_generate_incident_postmortem()
+    test_proactive_3am_page()
     print("========================================")
-    print("ALL 10 END-TO-END TESTS PASSED (100% OK)!")
+    print("ALL 13 END-TO-END TESTS PASSED (100% OK)!")
     print("========================================")
 
 

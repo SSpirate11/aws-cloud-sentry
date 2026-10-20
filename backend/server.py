@@ -101,6 +101,24 @@ def generate_incident_postmortem(incident_id: str = "INC-84920") -> str:
     res = aws_tools.generate_incident_postmortem(incident_id=incident_id)
     return json.dumps(res, indent=2)
 
+@mcp.tool(
+    name="trace_deployment_culprit",
+    description="Forensic Git Blame & CI/CD deployment audit: identifies the exact offending commit, PR reviewer speed, revenue burn rate, and SRE coffee bounty."
+)
+def trace_deployment_culprit(service: str = "checkout-api") -> str:
+    """Traces the offending commit, PR approval metadata, and sleep disruption index."""
+    res = aws_tools.trace_deployment_culprit(service=service)
+    return json.dumps(res, indent=2)
+
+@mcp.tool(
+    name="simulate_blast_radius",
+    description="Digital Twin Canary Pre-Flight Simulator: replays synthetic peak traffic against the target rollback revision and issues a JIT Alarm-Scoped IAM Session Policy."
+)
+def simulate_blast_radius(service: str = "checkout-api", target_revision: str = "checkout-api:41") -> str:
+    """Runs synthetic canary load simulation and generates JIT IAM rollback policy."""
+    res = aws_tools.simulate_blast_radius(service=service, target_revision=target_revision)
+    return json.dumps(res, indent=2)
+
 
 # 2. Initialize FastAPI Application
 app = FastAPI(
@@ -236,6 +254,10 @@ async def handle_voice_turn(req: VoiceQueryRequest):
     user_query = cleaned_query
     tool_traces: List[Dict[str, Any]] = []
 
+    # Bridge registered MCP tools into Amazon Bedrock Converse toolConfig schema
+    registered_tools = await mcp.list_tools()
+    planner_meta = aws_tools.plan_mcp_tools_with_bedrock(raw_query, registered_tools)
+
     # CASE 1: Voice 2FA Confirmation of Rollback ("Confirm", "Yes rollback", "Authorize", or PIN "4921")
     if (
         any(w in user_query for w in ["confirm", "yes", "authorize", "proceed", "4921"])
@@ -261,6 +283,7 @@ async def handle_voice_turn(req: VoiceQueryRequest):
             f"• *Service:* {pending['service']} ({pending['cluster']})\n"
             f"• *Action:* Rolled back to `{pending['target_revision']}`\n"
             f"• *Status:* Health checks passing (0 active errors, memory 41.2%)\n"
+            f"• *FinOps Impact:* $147,915 checkout revenue saved (42s Voice MTTR vs 18m manual laptop login)\n"
             f"• *Authorized by:* Voice 2FA (Alexa+ VoiceID + Challenge PIN {pending.get('challenge_pin', '4921')})"
         )
         await invoke_mcp_tool(
@@ -271,7 +294,10 @@ async def handle_voice_turn(req: VoiceQueryRequest):
 
         SESSION_CONTEXT["pending_rollback"] = None
         
-        spoken = f"Rollback confirmed. Service {pending['service']} has been rolled back to task definition {pending['target_revision']}. Health checks are passing, and I have notified the incident channel."
+        spoken = (
+            f"Rollback confirmed. Service {pending['service']} has been rolled back to task definition {pending['target_revision']}. "
+            "Health checks are passing, saving an estimated 147 thousand dollars in checkout revenue compared to an 18-minute laptop login."
+        )
         
         return {
             "spoken_response": spoken,
@@ -282,6 +308,7 @@ async def handle_voice_turn(req: VoiceQueryRequest):
                 "service": pending["service"],
                 "cluster": pending["cluster"],
                 "active_revision": pending["target_revision"],
+                "revenue_saved": "$147,915 Protected (42s vs 18m MTTR)",
                 "status_message": "Rollback completed. 0 active 5xx errors. Memory stable at 41.2%.",
                 "metrics": {
                     "MemoryUtilization": "41.2%",
@@ -290,6 +317,71 @@ async def handle_voice_turn(req: VoiceQueryRequest):
                 }
             },
             "state": "RESOLVED",
+            "planner": planner_meta,
+            "tool_traces": tool_traces
+        }
+
+    # CASE 1B: Forensic Git Blame & Coffee Bounty ("Alexa, who broke production?", "Run git blame", "Who deployed this?")
+    if any(k in user_query for k in ["who broke", "git blame", "culprit", "who deployed", "who pushed", "coffee", "blame", "author"]):
+        target = _infer_target_service(user_query)
+        service = target["service"]
+        culprit_res = await invoke_mcp_tool(
+            "trace_deployment_culprit",
+            {"service": service},
+            tool_traces
+        )
+
+        spoken = (
+            f"Forensic Git blame complete for {service}. Commit {culprit_res['commit_sha']} was pushed {culprit_res['deployed_at']} "
+            f"by {culprit_res['author']}, and approved in {culprit_res['pr_approval_time']} with the comment LGTM rocket emoji. "
+            f"I have enabled a Friday deploy block and logged a bounty of {culprit_res['coffee_bounty']}."
+        )
+
+        return {
+            "spoken_response": spoken,
+            "display_card": {
+                "title": f"3 AM Forensic Git Blame: {service}",
+                "badge": "CULPRIT IDENTIFIED",
+                "badge_color": "amber",
+                "service": service,
+                "culprit_data": culprit_res,
+                "status_message": f"Commit {culprit_res['commit_sha']} deployed {culprit_res['deployed_at']}."
+            },
+            "state": "CULPRIT_IDENTIFIED",
+            "planner": planner_meta,
+            "tool_traces": tool_traces
+        }
+
+    # CASE 1C: Digital Twin Canary Pre-Flight & Blast Radius Simulation ("Alexa, simulate blast radius", "Run canary test")
+    if any(k in user_query for k in ["blast radius", "canary", "simulate", "digital twin", "pre-flight", "preflight", "stress test"]):
+        target = _infer_target_service(user_query)
+        sim_res = await invoke_mcp_tool(
+            "simulate_blast_radius",
+            {
+                "service": target["service"],
+                "target_revision": target["target_revision"]
+            },
+            tool_traces
+        )
+
+        spoken = (
+            f"Digital twin canary simulation passed for {target['target_revision']} at 12,400 requests per second. "
+            f"Predicted memory peak is {sim_res['predicted_memory_peak']} with zero OOM probability. "
+            "A 300-second Just-In-Time IAM rollback session policy is armed."
+        )
+
+        return {
+            "spoken_response": spoken,
+            "display_card": {
+                "title": f"Digital Twin Canary Pre-Flight: {target['service']}",
+                "badge": "0% OOM RISK • SAFE",
+                "badge_color": "cyan",
+                "service": target["service"],
+                "blast_radius_data": sim_res,
+                "status_message": f"Replayed {sim_res['synthetic_load_rps']} against {target['target_revision']}."
+            },
+            "state": "BLAST_RADIUS_VERIFIED",
+            "planner": planner_meta,
             "tool_traces": tool_traces
         }
 
@@ -406,10 +498,12 @@ async def handle_voice_turn(req: VoiceQueryRequest):
                 "target_revision": target_rev,
                 "challenge_pin": gate_res.get("challenge_pin", "4921"),
                 "voice_biometric": gate_res.get("voice_biometric", "Alexa+ VoiceID: SRE-Primary-OnCall (99.4% match)"),
+                "jit_iam_policy": gate_res.get("jit_iam_policy"),
                 "status_message": "Safety Gate active. Mutating action requires spoken confirmation token.",
                 "action_prompt": "Say: 'Confirm rollback' (or PIN 4921) to execute."
             },
             "state": "AWAITING_CONFIRMATION",
+            "planner": planner_meta,
             "tool_traces": tool_traces
         }
 
@@ -543,6 +637,45 @@ async def handle_voice_turn(req: VoiceQueryRequest):
             "status_message": f"Dynamic MCP telemetry query for {inc['service']} ({inc['id']})."
         },
         "state": "INCIDENT_ACTIVE" if inc["status"] == "ALARM" else "RESOLVED",
+        "tool_traces": tool_traces
+    }
+
+@app.post("/api/proactive-alert")
+async def trigger_proactive_3am_page():
+    """
+    Simulates a proactive 3:14 AM PagerDuty / CloudWatch SNS event pushing an
+    ambient wake-up page to the SRE's bedside Echo Show before the user even speaks.
+    """
+    ACTIVE_INCIDENTS["INC-84920"] = json.loads(json.dumps(MOCK_SCENARIOS["checkout_api_oom"]))
+    tool_traces: List[Dict[str, Any]] = []
+    alarms = await invoke_mcp_tool("get_active_alarms", {}, tool_traces)
+    alarm = alarms[0] if alarms else ACTIVE_INCIDENTS["INC-84920"]
+    service_name = alarm.get("service", "checkout-api")
+    logs = await invoke_mcp_tool("fetch_error_logs", {"service_name": service_name, "limit": 3}, tool_traces)
+    diagnosis = await invoke_mcp_tool("diagnose_incident", {"service_name": service_name}, tool_traces)
+
+    spoken = (
+        "Critical Sev-1 Page! Wake up! CloudWatch alarm triggered on checkout-api in us-east-1. "
+        "Memory is at 99.4 percent and checkout is bleeding 142 dollars per second. "
+        "Say 'Alexa, rollback checkout-api' or 'Alexa, who broke production?'"
+    )
+    return {
+        "spoken_response": spoken,
+        "display_card": {
+            "title": f"🚨 3 AM PROACTIVE PAGE: {alarm.get('alarm_name', 'checkout-api')}",
+            "badge": "SEV-1 WAKE-UP ALARM",
+            "badge_color": "red",
+            "service": service_name,
+            "cluster": alarm.get("cluster", "production-us-east-1"),
+            "severity": alarm.get("severity", "CRITICAL (Sev-2)"),
+            "reason": alarm.get("reason"),
+            "current_revision": alarm.get("current_revision", "checkout-api:42"),
+            "recommended_rollback": alarm.get("previous_revision", "checkout-api:41"),
+            "metrics": alarm.get("metrics"),
+            "bedrock_diagnosis": diagnosis,
+            "logs_preview": logs[:2] if isinstance(logs, list) else []
+        },
+        "state": "INCIDENT_ACTIVE",
         "tool_traces": tool_traces
     }
 

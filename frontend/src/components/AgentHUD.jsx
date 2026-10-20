@@ -1,12 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Terminal, ChevronDown, ChevronUp, Layers, CheckCircle2, AlertTriangle, Code2, Cpu, ArrowUpRight, Copy, Activity, Workflow } from 'lucide-react';
 import FlowPipeline from './FlowPipeline';
 import LiveFlowchart from './LiveFlowchart';
 
 export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [viewType, setViewType] = useState('FLOWCHART'); // 'FLOWCHART' or 'CARDS'
+  const [viewType, setViewType] = useState('FLOWCHART'); // 'FLOWCHART', 'CARDS', or 'SCHEMA'
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [mcpSchemaTools, setMcpSchemaTools] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/mcp-tools')
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data.tools)) {
+          setMcpSchemaTools(data.tools);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleCopy = (trace, idx) => {
     navigator.clipboard.writeText(JSON.stringify(trace, null, 2));
@@ -115,6 +127,26 @@ export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
               <Layers size={10} />
               <span>Cards</span>
             </button>
+            <button
+              onClick={() => setViewType('SCHEMA')}
+              style={{
+                background: viewType === 'SCHEMA' ? 'rgba(0, 210, 255, 0.25)' : 'transparent',
+                color: viewType === 'SCHEMA' ? '#38bdf8' : '#94a3b8',
+                border: 'none',
+                borderRadius: '3px',
+                fontSize: '0.62rem',
+                fontWeight: '700',
+                padding: '2px 6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+              title="Inspect Live Registered MCP Tool Schemas"
+            >
+              <Code2 size={10} />
+              <span>MCP ({mcpSchemaTools.length || 9})</span>
+            </button>
           </div>
 
           <span style={{
@@ -145,8 +177,42 @@ export default function AgentHUD({ toolTraces = [], state = 'STANDBY' }) {
         <div style={{ flexShrink: 0 }}>
           {viewType === 'FLOWCHART' ? (
             <LiveFlowchart toolTraces={toolTraces} state={state} />
-          ) : (
+          ) : viewType === 'CARDS' ? (
             <FlowPipeline toolTraces={toolTraces} state={state} />
+          ) : (
+            <div style={{
+              background: 'rgba(11, 17, 30, 0.9)',
+              borderRadius: '8px',
+              border: '1px solid rgba(0, 210, 255, 0.25)',
+              padding: '0.45rem 0.55rem',
+              marginBottom: '0.4rem',
+              maxHeight: '215px',
+              overflowY: 'auto',
+              fontFamily: 'JetBrains Mono, monospace'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                <span style={{ fontSize: '0.62rem', color: '#38bdf8', fontWeight: '700' }}>
+                  GET /api/mcp-tools • Live MCPServer Registry
+                </span>
+                <span style={{ fontSize: '0.58rem', color: '#34d399' }}>Bedrock toolConfig Ready</span>
+              </div>
+              {mcpSchemaTools.map((t, i) => (
+                <div key={i} style={{
+                  padding: '0.28rem 0.4rem',
+                  marginBottom: '0.25rem',
+                  borderRadius: '5px',
+                  background: 'rgba(4, 7, 15, 0.8)',
+                  border: '1px solid rgba(255,255,255,0.06)'
+                }}>
+                  <div style={{ fontSize: '0.66rem', color: '#f8fafc', fontWeight: '700' }}>
+                    {i + 1}. {t.name}
+                  </div>
+                  <div style={{ fontSize: '0.58rem', color: '#94a3b8', fontFamily: 'Inter, sans-serif' }}>
+                    {t.description}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
