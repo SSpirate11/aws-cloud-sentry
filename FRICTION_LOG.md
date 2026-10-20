@@ -1,104 +1,59 @@
-# AWS CloudSentry — Developer Feedback & Friction Log
-*Submitted for the Build, Ship, Shape: Amazon Developer Hackathon 2026*  
-*Track: Alexa+ (Self-Hosted MCP & Simulated Voice Agent)*  
-*Mini-Challenges: AWS Builder & Open Source*
+# AWS CloudSentry: Developer Feedback and Friction Log
+
+**Event:** Build, Ship, Shape: Amazon Developer Hackathon 2026  
+**Primary Track:** Alexa+ (Self-Hosted MCP Server and Simulated Voice Experience)  
+**Mini-Challenges:** AWS Builder and Open Source
 
 ---
 
-## 1. Product Feedback by Tool & SDK
+## 1. Product Feedback by Tool and SDK
 
-### A. Model Context Protocol (MCP) Streamable HTTP Specification (Spec 2025-11-25+)
-* **What we used it for:** Implementing the self-hosted MCP server (`/mcp` endpoint) that exposes CloudWatch alarms, error logs, Bedrock diagnostic models, and ECS rollback actions to Alexa+ and agentic orchestrators.
+### A. Model Context Protocol (MCP) Streamable HTTP (Spec 2025-11-25+)
+* **How we used it:** Built the self-hosted MCP server (`/mcp` endpoint in `backend/server.py`) exposing 9 operational tools across CloudWatch, ECS, S3, and Bedrock, invoked at runtime via `await mcp.call_tool(...)` and introspected via `await mcp.list_tools()`.
 * **What worked well:**
-  * Clean separation of concerns between tool declarations and execution handlers.
-  * Native streaming support over Server-Sent Events (SSE) enables low-latency streaming of multi-step diagnostic traces.
-  * Tool JSON Schema definitions allow language models to reliably structure parameters without hallucinating AWS API arguments.
-* **What needs work:**
-  * The transition from MCP 1.x (`FastMCP`) to MCP 2.x (`MCPServer`) in the Python SDK introduced breaking namespace shifts (`from mcp.server.mcpserver import MCPServer`) that lacked clear error hints for newcomers.
-  * Bi-directional session handshake documentation over pure Streamable HTTP (as opposed to stdio) needs more production reference implementations.
-* **Onboarding experience:** 8/10. Once the server spec is understood, building micro-tools for cloud ops is remarkably fast.
-* **Would we build with it again?** Yes, absolutely. MCP is the superior open standard for voice-to-tool orchestration.
+  * Clean separation between tool schema declarations (`@mcp.tool`) and execution handlers.
+  * Direct schema compatibility with Amazon Bedrock's `converse(toolConfig=...)` format made translating MCP tool definitions into Bedrock tool specs straightforward.
+* **What needs improvement:**
+  * In the Python `mcp` SDK (`1.2+` / `2.x`), the shift between `FastMCP` and `from mcp.server.mcpserver import MCPServer` is poorly documented in migration guides and trips up developers wiring custom FastAPI sub-mounts.
+  * Mounting `mcp.streamable_http_app()` inside an existing FastAPI application requires careful lifecycle coordination when also exposing REST endpoints for a local web simulator.
 
-### B. AWS Bedrock (`anthropic.claude-3-5-sonnet` / Bedrock Runtime)
-* **What we used it for:** Autonomous root-cause analysis on high-volume CloudWatch error logs, identifying container OOMKill patterns, correlated git commits, and suggesting precise task revision rollbacks.
+### B. AWS Bedrock (`anthropic.claude-3-5-sonnet` and `converse` API)
+* **How we used it:** Automated root-cause analysis over raw CloudWatch container logs, unified Git diff generation for hotfixes, and off-script SRE Q&A.
 * **What worked well:**
-  * Zero-shot diagnostic accuracy on messy, raw stack traces. It correctly distinguished between upstream network timeouts and fatal Linux cgroup OOMKills (ExitCode 137).
-  * Fast inference latency via Bedrock Converse / InvokeModel API (< 1.2s), essential for conversational voice interfaces where users expect rapid responses.
-* **What needs work:**
-  * Cold start latency on large prompt contexts can occasionally push voice response delays past the 2-second conversational threshold.
-  * Streaming chunk handling in conjunction with MCP tool callbacks requires custom event loop management.
-* **Onboarding experience:** 9/10. `boto3` integration with Bedrock is robust and well-documented.
-* **Would we build with it again?** Yes. Bedrock is essential for enterprise SRE automation.
+  * High diagnostic precision on raw container logs (distinguishing between Linux cgroup `OOMKilled` exit code 137 and HikariCP PostgreSQL connection pool starvation).
+  * The `converse` API `toolConfig` structure maps cleanly to JSON Schema inputs exported by `MCPServer`.
+* **What needs improvement:**
+  * When chaining `describe_alarms` -> `filter_log_events` -> Bedrock inference inside a single voice turn, cold-start latency can push total response time past 2.5 seconds, which feels slow on a voice device without an intermediate acoustic progress cue.
 
-### C. Amazon CloudWatch & Amazon ECS SDKs (`boto3`)
-* **What we used it for:** Polling active alarm states (`describe_alarms`), querying log groups (`filter_log_events`), and triggering container deployment updates (`update_service`).
+### C. Amazon CloudWatch, ECS, and S3 (`boto3` + LocalStack)
+* **How we used it:** Polled alarm states (`describe_alarms`), fetched container error logs (`filter_log_events`), updated ECS task definitions (`update_service`), and archived markdown post-mortems (`put_object`).
 * **What worked well:**
-  * Battle-tested API reliability and granular IAM permission controls.
-* **What needs work:**
-  * Log filtering syntax in CloudWatch Logs Insights is somewhat rigid when seeking multi-line Java/Node stack traces in a single query.
+  * Being able to point standard `boto3` clients at LocalStack (`http://localhost:4566`) allowed us to seed realistic CloudWatch alarms, log streams, and S3 buckets locally without incurring AWS charges during rapid testing.
 
 ---
 
-## 2. Friction Log Entries (Judging Bonus)
+## 2. Detailed Friction Log Entries
 
-### Friction Log #1: Voice Turn Latency vs. Deep Diagnostic Reasoning
-* **Task Attempted:** Chaining CloudWatch log retrieval $\to$ Bedrock root-cause analysis $\to$ text-to-speech synthesis within a single synchronous voice turn.
-* **Steps Taken:**
-  1. User asks: *"Alexa, what just triggered the alarm in production?"*
-  2. Orchestrator calls `get_active_alarms()`, then `fetch_error_logs()`, then calls Bedrock with a 500-token prompt.
-  3. Synthesizes full response.
-* **Expected vs. Actual:**
-  * *Expected:* Voice response begins within 1.0 second.
-  * *Actual:* Total round-trip latency exceeded 2.8 seconds due to serial Bedrock inference, causing voice dead-air.
-* **Severity:** **High (Degrades Voice UX)**.
-* **Workaround Applied:** Split the response architecture: Alexa immediately acknowledges the alert state in 400ms (*"Investigating alarm TargetResponseTime on checkout-api..."*) while streaming the Bedrock diagnostic trace to the visual Echo Show display in parallel.
-* **Actionable Suggestion for Amazon/Alexa Teams:** Provide an official Alexa+ Ambient State Hook (e.g., `alexa.agent.streamInterimProgress()`) that enables audio filler sounds (like subtle thinking chimes) while background MCP tools execute heavy compute.
+### Friction Entry 1: Voice Turn Timeout vs. Multi-Call AWS Cold Starts
+* **Task Attempted:** Chaining CloudWatch alarm inspection, log extraction, and Bedrock root-cause synthesis in one synchronous voice turn.
+* **Observed Issue:** Serial execution of three `boto3` calls plus LLM inference takes 2.2 to 3.4 seconds on cold connections, creating noticeable silence before TTS playback starts.
+* **Workaround Applied:** Added immediate visual state transitions (`THINKING` -> progressive tool trace streaming in the UI) and kept spoken responses under two sentences while pushing full stack traces and diffs to the Echo Show screen.
+* **Recommendation for Alexa+ Team:** Provide a native MCP progress notification hook that triggers an ambient Echo Show "thinking chime" or brief filler acknowledgement whenever an MCP tool call exceeds 800ms.
 
----
+### Friction Entry 2: No Native Confirmation Schema Directive for Destructive MCP Tools
+* **Task Attempted:** Preventing single-turn voice commands (or background noise) from immediately executing destructive infrastructure changes like `execute_rollback`.
+* **Observed Issue:** The current MCP tool specification treats read-only queries (`get_active_alarms`) and destructive mutations (`execute_rollback`) identically at the schema layer.
+* **Workaround Applied:** Implemented a custom two-phase state machine in `execute_rollback` (`confirmed=False` returns `AWAITING_VOICE_CONFIRMATION` with a 4-digit PIN `4921`, VoiceID match metadata, and a 300-second JIT STS session policy).
+* **Recommendation for Alexa+ Team:** Add a first-class `x-alexa-confirmation-required: true` and `x-alexa-voiceid-required: true` extension to the Alexa+ MCP tool schema so Echo hardware enforces biometric confirmation natively before invoking mutating endpoints.
 
-### Friction Log #2: Safety Protocol for Destructive Voice Actions
-* **Task Attempted:** Executing an ECS container rollback via natural language voice command.
-* **Steps Taken:**
-  1. User speaks: *"Alexa, rollback checkout-api to revision 41."*
-  2. Model detects intent and attempts direct execution of `execute_rollback`.
-* **Expected vs. Actual:**
-  * *Expected:* Voice agents must not unilaterally mutate or delete production infrastructure based on single-shot intent without confirmation.
-  * *Actual:* Standard agent frameworks execute tool calls immediately upon LLM function emission.
-* **Severity:** **Critical (Production Outage Risk)**.
-* **Workaround Applied:** Engineered an explicit **Voice 2FA Protocol**:
-  * Tools define a `safety_level: "DESTRUCTIVE_MUTATION"`.
-  * The MCP server intercepts unconfirmed calls, returning status `AWAITING_VOICE_CONFIRMATION` with an orange warning state on the Echo screen.
-  * The action is only executed if the user explicitly confirms (*"Confirm rollback"*).
-* **Actionable Suggestion for Amazon/Alexa Teams:** Incorporate a native `requiresUserConfirmation: true` metadata flag in the Alexa+ MCP Tool Schema specification, handled natively at the device level with Echo biometric voiceprint matching.
+### Friction Entry 3: Reverse Proxy Buffering on Streamable HTTP (`/mcp`)
+* **Task Attempted:** Running the FastAPI + `MCPServer.streamable_http_app()` server behind local Vite dev proxies and container ingress.
+* **Observed Issue:** Default proxy buffering can delay chunked JSON-RPC responses unless explicit headers and clean sub-path mounting are configured.
+* **Workaround Applied:** Mounted `/mcp` directly on the ASGI application and exposed `/api/mcp-tools` for synchronous schema inspection by the simulator HUD.
+* **Recommendation for Alexa+ Team:** Publish an official FastAPI + AWS App Runner / ECS Fargate reference template pre-configured for MCP Streamable HTTP (`2025-11-25+`).
 
----
-
-### Friction Log #3: MCP Spec Over Streamable HTTP vs. Stdio in Serverless
-* **Task Attempted:** Deploying an MCP server designed for Streamable HTTP in containerized or serverless cloud environments (AWS App Runner / Lambda).
-* **Steps Taken:** Configured Starlette ASGI app with `MCPServer.streamable_http_app()`.
-* **Expected vs. Actual:**
-  * *Expected:* Automatic SSE connection management and keep-alives.
-  * *Actual:* Certain reverse proxies and load balancers buffer HTTP responses, breaking Server-Sent Events unless `X-Accel-Buffering: no` and explicit chunked transfer encoding headers are configured.
-* **Severity:** **Medium**.
-* **Workaround Applied:** Configured explicit ASGI headers on the FastAPI proxy layer to prevent chunk buffering.
-* **Actionable Suggestion for Amazon/Alexa Teams:** Add a reference CDK/SAM template for deploying Streamable HTTP MCP servers to AWS App Runner or ECS Fargate with verified ALB streaming rules.
-
----
-
-## 3. Official Feature Requests
-
-1. **Biometric Voice 2FA Verification for Critical MCP Tools**
-   * *What:* Allow MCP tool definitions to require biometric speaker verification before execution (e.g., confirming the speaker is the authenticated on-call engineer's voice profile).
-   * *Why it matters:* Prevents guests or unauthorized voices from triggering infrastructure or financial mutations.
-   * *Urgency:* **Critical**.
-
-2. **Native Echo Ambient Progress Rings for Multi-Step MCP Chaining**
-   * *What:* An API to control the Echo light ring color/animation state directly from MCP response headers (e.g., pulsing amber during confirmation, pulsing purple during LLM tool invocation).
-   * *Why it matters:* Enhances multi-modal feedback on Echo Show and Echo smart speakers.
-   * *Urgency:* **Important**.
-
-3. **Pre-Built AWS MCP Connector Pack for Alexa+**
-   * *What:* First-party Amazon-maintained MCP servers for CloudWatch, AWS Systems Manager, and Health Dashboard.
-   * *Why it matters:* Accelerates enterprise devops adoption of ambient voice assistants.
-   * *Urgency:* **Nice-to-have**.
-
+### Friction Entry 4: Lack of a Local Desktop Simulator for Echo Show APL + MCP
+* **Task Attempted:** Testing multimodal voice + screen cards alongside live MCP tool execution traces on a local developer machine.
+* **Observed Issue:** Existing Alexa developer console simulators do not provide a unified view showing both the Echo Show display card and the underlying MCP JSON-RPC tool sequence.
+* **Workaround Applied:** Built our own split-screen React simulator combining a 3D Echo hardware model, an Echo Show 10 display card, and a live MCP telemetry inspector.
+* **Recommendation for Alexa+ Team:** Ship a local `alexa-mcp-inspector` desktop view that renders multimodal screen cards side-by-side with MCP tool execution logs.
