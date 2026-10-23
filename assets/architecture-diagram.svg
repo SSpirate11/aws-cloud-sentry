@@ -1,0 +1,742 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1020" width="1600" height="1020" style="background:#090d16; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00CAFF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#7928CA" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="cardGradDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#151d2f" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0d1424" stop-opacity="0.98"/>
+    </linearGradient>
+
+    <linearGradient id="mcpGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.15"/>
+    </linearGradient>
+
+    <linearGradient id="awsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9900" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#232f3e" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <linearGradient id="accentCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00CAFF"/>
+      <stop offset="100%" stop-color="#0080FF"/>
+    </linearGradient>
+
+    <linearGradient id="accentOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F38020"/>
+      <stop offset="100%" stop-color="#FAAD3F"/>
+    </linearGradient>
+
+    <linearGradient id="accentGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <linearGradient id="accentRed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#DC2626"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- Markers for Arrows -->
+    <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#00CAFF"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#A855F7"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#FF9900"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#10B981"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 1 1 L 7 4 L 1 7 Z" fill="#64748B"/>
+    </marker>
+
+    <!-- Pattern Background -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.75" stroke-opacity="0.4"/>
+    </pattern>
+  </defs>
+
+  <!-- Background Grid -->
+  <rect width="1600" height="1020" fill="url(#grid)" />
+
+  <!-- ==================== HEADER BAR ==================== -->
+  <g transform="translate(40, 25)">
+    <!-- Brand / Title -->
+    <text x="0" y="32" font-size="28" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">AWS CloudSentry</text>
+    <text x="245" y="32" font-size="20" font-weight="600" fill="#00CAFF">| System Architecture &amp; Runtime Topology</text>
+    <text x="0" y="58" font-size="13" font-weight="400" fill="#94A3B8">3 AM Voice Incident Commander for SREs  •  Alexa Skills Kit (ASK)  •  Self-Hosted FastMCP  •  Zero-Trust 2FA  •  AWS Mesh</text>
+
+    <!-- Badges -->
+    <g transform="translate(1080, 5)">
+      <!-- Alexa+ Badge -->
+      <rect x="0" y="0" width="105" height="26" rx="13" fill="#00CAFF" fill-opacity="0.15" stroke="#00CAFF" stroke-width="1.2"/>
+      <circle cx="13" cy="13" r="4" fill="#00CAFF"/>
+      <text x="24" y="17" font-size="11" font-weight="700" fill="#00CAFF">ALEXA+ TRACK</text>
+
+      <!-- AWS Builder Badge -->
+      <rect x="115" y="0" width="115" height="26" rx="13" fill="#FF9900" fill-opacity="0.15" stroke="#FF9900" stroke-width="1.2"/>
+      <circle cx="128" cy="13" r="4" fill="#FF9900"/>
+      <text x="138" y="17" font-size="11" font-weight="700" fill="#FF9900">AWS BUILDER</text>
+
+      <!-- Open Source Badge -->
+      <rect x="240" y="0" width="105" height="26" rx="13" fill="#10B981" fill-opacity="0.15" stroke="#10B981" stroke-width="1.2"/>
+      <circle cx="253" cy="13" r="4" fill="#10B981"/>
+      <text x="264" y="17" font-size="11" font-weight="700" fill="#10B981">OPEN SOURCE</text>
+
+      <!-- MCP Protocol Badge -->
+      <rect x="355" y="0" width="115" height="26" rx="13" fill="#A855F7" fill-opacity="0.15" stroke="#A855F7" stroke-width="1.2"/>
+      <circle cx="368" cy="13" r="4" fill="#A855F7"/>
+      <text x="378" y="17" font-size="11" font-weight="700" fill="#A855F7">MCP 2025-11-25</text>
+    </g>
+  </g>
+
+  <!-- Horizontal divider -->
+  <line x1="40" y1="95" x2="1560" y2="95" stroke="#334155" stroke-width="1" stroke-opacity="0.6"/>
+
+  <!-- ==================== TIER 1: VOICE & INGRESS LAYER ==================== -->
+  <g transform="translate(40, 115)">
+    <!-- Column Header -->
+    <rect x="0" y="0" width="310" height="865" rx="14" fill="#0f172a" fill-opacity="0.6" stroke="#1e293b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="310" height="42" rx="14" fill="#1e293b" fill-opacity="0.5"/>
+    <text x="16" y="27" font-size="13" font-weight="700" fill="#38BDF8" letter-spacing="1">1. VOICE &amp; INGRESS TIER</text>
+
+    <!-- Card 1: Physical Echo Hardware -->
+    <g transform="translate(15, 60)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="280" height="225" rx="10" fill="url(#cardGradDark)" stroke="#00CAFF" stroke-width="1.5"/>
+      
+      <!-- Icon: Amazon Echo Speaker with Cyan Light Ring -->
+      <g transform="translate(18, 18)">
+        <!-- Echo hardware body cylinder -->
+        <ellipse cx="22" cy="30" rx="20" ry="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+        <path d="M 2 12 L 2 30 C 2 35 42 35 42 30 L 42 12 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+        <!-- Top illuminated ring (Cyan) -->
+        <ellipse cx="22" cy="12" rx="20" ry="8" fill="#0B132B" stroke="#00CAFF" stroke-width="3" filter="url(#glowCyan)"/>
+        <!-- Mic mute button & action dot -->
+        <circle cx="16" cy="12" r="2.5" fill="#00CAFF"/>
+        <circle cx="28" cy="12" r="2.5" fill="#00CAFF"/>
+        <!-- Soundwaves -->
+        <path d="M 46 6 C 50 10 50 14 46 18" fill="none" stroke="#00CAFF" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 50 2 C 56 8 56 18 50 24" fill="none" stroke="#00CAFF" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+      </g>
+
+      <text x="82" y="32" font-size="15" font-weight="700" fill="#FFFFFF">Physical Echo Device</text>
+      <text x="82" y="48" font-size="11" font-weight="600" fill="#00CAFF">Amazon Echo Dot / Show</text>
+
+      <line x1="18" y1="65" x2="262" y2="65" stroke="#334155" stroke-width="1"/>
+
+      <!-- Bullet Specs -->
+      <g transform="translate(18, 85)" font-size="11" fill="#CBD5E1">
+        <circle cx="4" cy="-4" r="2.5" fill="#00CAFF"/>
+        <text x="14" y="0">Far-Field Microphone Array</text>
+        
+        <circle cx="4" cy="20" r="2.5" fill="#00CAFF"/>
+        <text x="14" y="24">Wake Word: <tspan fill="#38BDF8" font-weight="600">"Alexa, open Cloud Sentry"</tspan></text>
+        
+        <circle cx="4" cy="44" r="2.5" fill="#00CAFF"/>
+        <text x="14" y="48">Dynamic 3 AM Ambient Audio Alerts</text>
+
+        <circle cx="4" cy="68" r="2.5" fill="#00CAFF"/>
+        <text x="14" y="72">Spoken Zero-Trust 2FA PIN Response</text>
+
+        <circle cx="4" cy="92" r="2.5" fill="#00CAFF"/>
+        <text x="14" y="96">Synthesized TTS Diagnostic Speech</text>
+      </g>
+
+      <!-- Status Pill -->
+      <rect x="180" y="192" width="85" height="20" rx="10" fill="#10B981" fill-opacity="0.2" stroke="#10B981" stroke-width="1"/>
+      <circle cx="190" cy="202" r="3" fill="#10B981"/>
+      <text x="198" y="206" font-size="9" font-weight="700" fill="#34D399">HARDWARE LIVE</text>
+    </g>
+
+    <!-- Connecting Arrow 1 -> 2 -->
+    <path d="M 155 285 L 155 320" fill="none" stroke="#00CAFF" stroke-width="2" marker-end="url(#arrowCyan)"/>
+    <text x="165" y="307" font-size="10" font-weight="600" fill="#38BDF8">Audio / NLU</text>
+
+    <!-- Card 2: Alexa Skills Kit (ASK) Cloud -->
+    <g transform="translate(15, 325)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="280" height="230" rx="10" fill="url(#cardGradDark)" stroke="#0284C7" stroke-width="1.5"/>
+
+      <!-- Icon: Alexa Chat Bubble & ASK -->
+      <g transform="translate(18, 16)">
+        <circle cx="22" cy="22" r="20" fill="#00CAFF"/>
+        <!-- Speech Bubble cut out -->
+        <path d="M 14 16 C 14 13 30 13 30 20 C 30 26 23 27 21 31 L 20 31 C 20 28 22 26 24 24 C 26 22 26 18 20 18 C 16 18 16 21 16 21 Z" fill="#090d16"/>
+        <circle cx="21" cy="34" r="2" fill="#090d16"/>
+      </g>
+
+      <text x="75" y="30" font-size="15" font-weight="700" fill="#FFFFFF">Alexa Skills Kit (ASK)</text>
+      <text x="75" y="46" font-size="11" font-weight="600" fill="#38BDF8">Cloud Speech Platform</text>
+
+      <line x1="18" y1="65" x2="262" y2="65" stroke="#334155" stroke-width="1"/>
+
+      <!-- Specs -->
+      <g transform="translate(18, 85)" font-size="11" fill="#CBD5E1">
+        <circle cx="4" cy="-4" r="2.5" fill="#38BDF8"/>
+        <text x="14" y="0">Custom Skill: <tspan fill="#FFFFFF" font-weight="600">"cloud sentry"</tspan></text>
+        
+        <circle cx="4" cy="20" r="2.5" fill="#38BDF8"/>
+        <text x="14" y="24">Skill ID Signature Validation</text>
+
+        <circle cx="4" cy="44" r="2.5" fill="#38BDF8"/>
+        <text x="14" y="48">Intent Model: <tspan fill="#93C5FD">IncidentTriageIntent</tspan></text>
+
+        <circle cx="4" cy="68" r="2.5" fill="#38BDF8"/>
+        <text x="14" y="72">Slots: <tspan fill="#F59E0B">ActionSlot, PinSlot, ServiceSlot</tspan></text>
+
+        <circle cx="4" cy="92" r="2.5" fill="#38BDF8"/>
+        <text x="14" y="96">JSON-RPC Webhook Dispatcher</text>
+      </g>
+
+      <rect x="175" y="196" width="90" height="20" rx="10" fill="#0284C7" fill-opacity="0.2" stroke="#0284C7" stroke-width="1"/>
+      <text x="183" y="210" font-size="9" font-weight="700" fill="#38BDF8">CUSTOM MODEL</text>
+    </g>
+
+    <!-- Connecting Arrow 2 -> 3 -->
+    <path d="M 155 555 L 155 595" fill="none" stroke="#00CAFF" stroke-width="2" marker-end="url(#arrowCyan)"/>
+    <text x="165" y="580" font-size="10" font-weight="600" fill="#38BDF8">HTTPS JSON</text>
+
+    <!-- Card 3: Cloudflare Edge Tunnel -->
+    <g transform="translate(15, 600)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="280" height="235" rx="10" fill="url(#cardGradDark)" stroke="#F38020" stroke-width="1.5"/>
+
+      <!-- Icon: Cloudflare Cloud -->
+      <g transform="translate(18, 16)">
+        <path d="M 15 28 A 10 10 0 0 1 20 12 A 16 16 0 0 1 42 16 A 11 11 0 0 1 45 32 L 15 32 Z" fill="#F38020"/>
+        <path d="M 33 22 L 31 16 A 10 10 0 0 0 20 14" fill="none" stroke="#FAAD3F" stroke-width="2"/>
+      </g>
+
+      <text x="75" y="30" font-size="15" font-weight="700" fill="#FFFFFF">Cloudflare Tunnel</text>
+      <text x="75" y="46" font-size="11" font-weight="600" fill="#F38020">Zero-Trust Secure Ingress</text>
+
+      <line x1="18" y1="65" x2="262" y2="65" stroke="#334155" stroke-width="1"/>
+
+      <!-- Specs -->
+      <g transform="translate(18, 85)" font-size="11" fill="#CBD5E1">
+        <circle cx="4" cy="-4" r="2.5" fill="#F38020"/>
+        <text x="14" y="0">E2E TLS 1.3 Ingress Termination</text>
+        
+        <circle cx="4" cy="20" r="2.5" fill="#F38020"/>
+        <text x="14" y="24">Zero Exposed Router / Firewall Ports</text>
+
+        <circle cx="4" cy="44" r="2.5" fill="#F38020"/>
+        <text x="14" y="48">Real-time Tunnel to Local Host</text>
+
+        <circle cx="4" cy="68" r="2.5" fill="#F38020"/>
+        <text x="14" y="72">Route: <tspan fill="#FDBA74">/api/alexa-webhook</tspan></text>
+
+        <circle cx="4" cy="92" r="2.5" fill="#F38020"/>
+        <text x="14" y="96">Sub-15ms Edge Proxy Latency</text>
+      </g>
+
+      <rect x="180" y="200" width="85" height="20" rx="10" fill="#F38020" fill-opacity="0.2" stroke="#F38020" stroke-width="1"/>
+      <circle cx="190" cy="210" r="3" fill="#F38020"/>
+      <text x="198" y="214" font-size="9" font-weight="700" fill="#FDBA74">TLS ACTIVE</text>
+    </g>
+  </g>
+
+  <!-- Connection: Cloudflare Tunnel -> FastAPI Backend -->
+  <path d="M 350 720 L 410 720 L 410 270 L 430 270" fill="none" stroke="#00CAFF" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrowCyan)"/>
+  <rect x="365" y="475" width="80" height="22" rx="4" fill="#090d16" stroke="#00CAFF" stroke-width="1"/>
+  <text x="372" y="490" font-size="10" font-weight="700" fill="#00CAFF">POST JSON</text>
+
+
+  <!-- ==================== TIER 2: INTELLIGENT RUNTIME TIER ==================== -->
+  <g transform="translate(430, 115)">
+    <!-- Column Outer Box -->
+    <rect x="0" y="0" width="450" height="865" rx="14" fill="#0f172a" fill-opacity="0.6" stroke="#1e293b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="450" height="42" rx="14" fill="#1e293b" fill-opacity="0.5"/>
+    <text x="16" y="27" font-size="13" font-weight="700" fill="#A855F7" letter-spacing="1">2. INTELLIGENT MCP RUNTIME &amp; SECURITY GATEWAY</text>
+
+    <!-- Component 2.1: FastAPI Core Server -->
+    <g transform="translate(15, 60)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="420" height="150" rx="10" fill="url(#cardGradDark)" stroke="#009688" stroke-width="1.5"/>
+
+      <!-- Icon: Python + FastAPI -->
+      <g transform="translate(18, 16)">
+        <rect x="0" y="0" width="44" height="44" rx="8" fill="#009688" fill-opacity="0.2" stroke="#009688" stroke-width="1"/>
+        <!-- FastAPI lightning bolt -->
+        <path d="M 24 8 L 14 24 L 23 24 L 20 36 L 31 18 L 22 18 Z" fill="#009688"/>
+      </g>
+
+      <text x="75" y="30" font-size="15" font-weight="700" fill="#FFFFFF">FastAPI Asynchronous Gateway</text>
+      <text x="75" y="46" font-size="11" font-weight="600" fill="#2DD4BF">Python 3.12  •  Uvicorn  •  High Concurrency</text>
+
+      <line x1="18" y1="65" x2="402" y2="65" stroke="#334155" stroke-width="1"/>
+
+      <!-- Endpoints Grid -->
+      <g transform="translate(18, 85)" font-size="11" fill="#E2E8F0">
+        <text x="0" y="0" font-family="monospace" fill="#38BDF8">POST /api/alexa-webhook</text>
+        <text x="210" y="0" font-size="10" fill="#94A3B8">ASK JSON parsing &amp; voice turns</text>
+
+        <text x="0" y="22" font-family="monospace" fill="#38BDF8">GET  /mcp</text>
+        <text x="210" y="22" font-size="10" fill="#94A3B8">Streamable HTTP MCP Endpoint</text>
+
+        <text x="0" y="44" font-family="monospace" fill="#38BDF8">POST /api/chat</text>
+        <text x="210" y="44" font-size="10" fill="#94A3B8">Interactive Web Simulator / Test</text>
+      </g>
+    </g>
+
+    <!-- Connecting Arrow -->
+    <path d="M 225 210 L 225 245" fill="none" stroke="#A855F7" stroke-width="2" marker-end="url(#arrowPurple)"/>
+    <text x="235" y="232" font-size="10" font-weight="600" fill="#C084FC">mcp.call_tool()</text>
+
+    <!-- Component 2.2: FastMCP Engine with 9 Autonomous Tools -->
+    <g transform="translate(15, 250)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="420" height="385" rx="10" fill="url(#cardGradDark)" stroke="#8B5CF6" stroke-width="1.8"/>
+      <rect x="0" y="0" width="420" height="55" rx="10" fill="url(#mcpGrad)"/>
+
+      <!-- MCP Logo / Lightning -->
+      <g transform="translate(18, 10)">
+        <rect x="0" y="0" width="36" height="36" rx="8" fill="#8B5CF6" fill-opacity="0.3" stroke="#8B5CF6" stroke-width="1"/>
+        <path d="M 20 6 L 12 18 L 19 18 L 16 30 L 25 14 L 18 14 Z" fill="#C084FC"/>
+      </g>
+
+      <text x="65" y="26" font-size="15" font-weight="700" fill="#FFFFFF">Model Context Protocol (FastMCP)</text>
+      <text x="65" y="42" font-size="11" font-weight="600" fill="#C084FC">Specification 2025-11-25+  •  9 Autonomous Tools</text>
+
+      <!-- 9 Tools List in 2 columns -->
+      <g transform="translate(18, 70)">
+        <!-- Tool 1 -->
+        <g transform="translate(0, 0)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">get_active_alarms</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">CloudWatch metric triggers</text>
+        </g>
+
+        <!-- Tool 2 -->
+        <g transform="translate(200, 0)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">fetch_error_logs</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">CloudWatch Log Insights</text>
+        </g>
+
+        <!-- Tool 3 -->
+        <g transform="translate(0, 56)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">diagnose_incident</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">Bedrock Claude 3.5 Sonnet</text>
+        </g>
+
+        <!-- Tool 4 -->
+        <g transform="translate(200, 56)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">trace_deployment</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">Git blame &amp; commit blame</text>
+        </g>
+
+        <!-- Tool 5 -->
+        <g transform="translate(0, 112)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">simulate_blast_radius</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">12.4k RPS &amp; IAM safety check</text>
+        </g>
+
+        <!-- Tool 6 -->
+        <g transform="translate(200, 112)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">canary_rollback</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">ECS task def v2 -> v1</text>
+        </g>
+
+        <!-- Tool 7 -->
+        <g transform="translate(0, 168)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">propose_code_fix</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">Git unified diff synthesis</text>
+        </g>
+
+        <!-- Tool 8 -->
+        <g transform="translate(200, 168)">
+          <rect x="0" y="0" width="185" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="8" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">generate_postmortem</text>
+          <text x="8" y="34" font-size="9.5" fill="#94A3B8">Severity, Timeline, &amp; Actions</text>
+        </g>
+
+        <!-- Tool 9 (Wide) -->
+        <g transform="translate(0, 224)">
+          <rect x="0" y="0" width="385" height="48" rx="6" fill="#1e1b4b" fill-opacity="0.6" stroke="#4338ca" stroke-width="1"/>
+          <text x="12" y="18" font-size="10.5" font-weight="700" font-family="monospace" fill="#A5B4FC">archive_postmortem_to_s3</text>
+          <text x="12" y="34" font-size="9.5" fill="#94A3B8">Boto3 S3 put_object &amp; audit persistence (cloud-sentry-postmortems-prod)</text>
+        </g>
+
+        <!-- Live Tool Metadata Banner -->
+        <rect x="0" y="282" width="385" height="22" rx="4" fill="#090d16" stroke="#312e81" stroke-width="1"/>
+        <text x="8" y="297" font-size="9.5" fill="#A5B4FC">Validated via JSON schema &amp; inspectable at GET /api/mcp-tools</text>
+      </g>
+    </g>
+
+    <!-- Connecting Arrow to Security Gate -->
+    <path d="M 225 635 L 225 665" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowCyan)"/>
+    <text x="235" y="652" font-size="10" font-weight="600" fill="#F87171">Mutating Action Request</text>
+
+    <!-- Component 2.3: Zero-Trust 2FA & PIN Gate -->
+    <g transform="translate(15, 670)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="420" height="175" rx="10" fill="url(#cardGradDark)" stroke="#EF4444" stroke-width="1.8"/>
+
+      <!-- Icon: Shield / Padlock -->
+      <g transform="translate(18, 14)">
+        <rect x="0" y="0" width="40" height="40" rx="8" fill="#EF4444" fill-opacity="0.2" stroke="#EF4444" stroke-width="1"/>
+        <path d="M 20 8 L 30 13 L 30 22 C 30 28 20 34 20 34 C 20 34 10 28 10 22 L 10 13 Z" fill="none" stroke="#F87171" stroke-width="2"/>
+        <circle cx="20" cy="20" r="2.5" fill="#F87171"/>
+      </g>
+
+      <text x="70" y="28" font-size="15" font-weight="700" fill="#FFFFFF">Zero-Trust Out-of-Band 2FA Gate</text>
+      <text x="70" y="44" font-size="11" font-weight="600" fill="#F87171">Destructive Action Authorization (Rollback / ECS Restart)</text>
+
+      <line x1="18" y1="60" x2="402" y2="60" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(18, 78)" font-size="11" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#EF4444"/>
+        <text x="14" y="0">Dynamic Challenge 4-Digit PIN Generated (e.g. <tspan fill="#FBBF24" font-weight="700">4921</tspan>)</text>
+
+        <circle cx="4" cy="18" r="2.5" fill="#EF4444"/>
+        <text x="14" y="22">Dual-Channel Sync: Alexa Mobile App Card + Terminal Banner</text>
+
+        <circle cx="4" cy="40" r="2.5" fill="#EF4444"/>
+        <text x="14" y="44">Voice Spoken Authorization: <tspan fill="#38BDF8" font-weight="600">"Pin four nine two one"</tspan></text>
+
+        <circle cx="4" cy="62" r="2.5" fill="#EF4444"/>
+        <text x="14" y="66">Prevents Accidental / Unauthorized Ambient Execution</text>
+      </g>
+    </g>
+  </g>
+
+
+  <!-- ==================== TIER 3 & 4: COMMUNICATION & SRE COCKPIT ==================== -->
+  <!-- Top Right Box: Slack Integration (Communication Tier) -->
+  <g transform="translate(905, 115)">
+    <rect x="0" y="0" width="300" height="380" rx="14" fill="#0f172a" fill-opacity="0.6" stroke="#1e293b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="300" height="42" rx="14" fill="#1e293b" fill-opacity="0.5"/>
+    <text x="16" y="27" font-size="13" font-weight="700" fill="#38BDF8" letter-spacing="1">3. INCIDENT OPS CHAT</text>
+
+    <!-- Slack Card -->
+    <g transform="translate(15, 60)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="270" height="295" rx="10" fill="url(#cardGradDark)" stroke="#4A154B" stroke-width="1.5"/>
+
+      <!-- Icon: Slack Official Logo Colors -->
+      <g transform="translate(18, 14)">
+        <rect x="0" y="0" width="40" height="40" rx="8" fill="#4A154B" fill-opacity="0.5" stroke="#611f69" stroke-width="1"/>
+        <circle cx="15" cy="14" r="3" fill="#E01E5A"/>
+        <rect x="12" y="19" width="6" height="9" rx="3" fill="#36C5F0"/>
+        <circle cx="26" cy="27" r="3" fill="#2EB67D"/>
+        <rect x="19" y="13" width="9" height="6" rx="3" fill="#ECB22E"/>
+      </g>
+
+      <text x="70" y="30" font-size="15" font-weight="700" fill="#FFFFFF">Slack Integration</text>
+      <text x="70" y="46" font-size="11" font-weight="600" fill="#E01E5A">#ops-war-room Webhooks</text>
+
+      <line x1="18" y1="65" x2="252" y2="65" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(18, 85)" font-size="11" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#36C5F0"/>
+        <text x="14" y="0">Sev-1 Incident Alert Broadcast</text>
+
+        <circle cx="4" cy="20" r="2.5" fill="#E01E5A"/>
+        <text x="14" y="24">Out-of-Band 2FA PIN Delivery</text>
+
+        <circle cx="4" cy="44" r="2.5" fill="#ECB22E"/>
+        <text x="14" y="48">Bedrock Root Cause Summary</text>
+
+        <circle cx="4" cy="68" r="2.5" fill="#2EB67D"/>
+        <text x="14" y="72">ECS Rollback Audit Trail Log</text>
+
+        <circle cx="4" cy="92" r="2.5" fill="#36C5F0"/>
+        <text x="14" y="96">Post-Mortem S3 Direct Link</text>
+      </g>
+
+      <!-- Simulated Message Snippet -->
+      <rect x="18" y="200" width="234" height="75" rx="6" fill="#090d16" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="218" r="4" fill="#E01E5A"/>
+      <text x="44" y="222" font-size="10" font-weight="700" fill="#FFFFFF">CloudSentry Bot</text>
+      <text x="180" y="222" font-size="9" fill="#64748B">03:14:22</text>
+      <text x="32" y="242" font-size="9.5" fill="#F87171">ALARM: checkout-api HighErrorRate</text>
+      <text x="32" y="260" font-size="9.5" fill="#34D399">&#x2714; Rolled back to v1 (PIN 4921 verified)</text>
+    </g>
+  </g>
+
+  <!-- Bottom Right Box: React Cockpit (Observability Tier) -->
+  <g transform="translate(905, 520)">
+    <rect x="0" y="0" width="300" height="460" rx="14" fill="#0f172a" fill-opacity="0.6" stroke="#1e293b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="300" height="42" rx="14" fill="#1e293b" fill-opacity="0.5"/>
+    <text x="16" y="27" font-size="13" font-weight="700" fill="#38BDF8" letter-spacing="1">4. SRE OPERATOR COCKPIT</text>
+
+    <!-- React Card -->
+    <g transform="translate(15, 60)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="270" height="375" rx="10" fill="url(#cardGradDark)" stroke="#61DAFB" stroke-width="1.5"/>
+
+      <!-- Icon: React Atom -->
+      <g transform="translate(18, 14)">
+        <rect x="0" y="0" width="40" height="40" rx="8" fill="#61DAFB" fill-opacity="0.15" stroke="#61DAFB" stroke-width="1"/>
+        <circle cx="20" cy="20" r="3" fill="#61DAFB"/>
+        <ellipse cx="20" cy="20" rx="14" ry="5" fill="none" stroke="#61DAFB" stroke-width="1.2"/>
+        <ellipse cx="20" cy="20" rx="14" ry="5" fill="none" stroke="#61DAFB" stroke-width="1.2" transform="rotate(60 20 20)"/>
+        <ellipse cx="20" cy="20" rx="14" ry="5" fill="none" stroke="#61DAFB" stroke-width="1.2" transform="rotate(120 20 20)"/>
+      </g>
+
+      <text x="70" y="30" font-size="15" font-weight="700" fill="#FFFFFF">React Telemetry UI</text>
+      <text x="70" y="46" font-size="11" font-weight="600" fill="#61DAFB">React 19  •  Vite  •  Tailwind CSS</text>
+
+      <line x1="18" y1="65" x2="252" y2="65" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(18, 85)" font-size="11" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#61DAFB"/>
+        <text x="14" y="0">Live Real-Time Audio Visualizer</text>
+
+        <circle cx="4" cy="20" r="2.5" fill="#61DAFB"/>
+        <text x="14" y="24">Interactive Voice Turn Simulator</text>
+
+        <circle cx="4" cy="44" r="2.5" fill="#61DAFB"/>
+        <text x="14" y="48">Dynamic 9-Tool MCP Inspector</text>
+
+        <circle cx="4" cy="68" r="2.5" fill="#61DAFB"/>
+        <text x="14" y="72">Unified Git Diff Patch Viewer</text>
+
+        <circle cx="4" cy="92" r="2.5" fill="#61DAFB"/>
+        <text x="14" y="96">Blast Radius Traffic Graph (12.4k)</text>
+
+        <circle cx="4" cy="116" r="2.5" fill="#61DAFB"/>
+        <text x="14" y="120">Server-Sent Events (SSE) Stream</text>
+      </g>
+
+      <!-- Waveform Animation Mock -->
+      <g transform="translate(18, 240)">
+        <rect x="0" y="0" width="234" height="45" rx="6" fill="#090d16" stroke="#334155" stroke-width="1"/>
+        <line x1="20" y1="22" x2="20" y2="22" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="32" y1="14" x2="32" y2="30" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="44" y1="8" x2="44" y2="36" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="56" y1="12" x2="56" y2="32" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="68" y1="18" x2="68" y2="26" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="80" y1="10" x2="80" y2="34" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="92" y1="6" x2="92" y2="38" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="104" y1="15" x2="104" y2="29" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="116" y1="11" x2="116" y2="33" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="128" y1="7" x2="128" y2="37" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="140" y1="13" x2="140" y2="31" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="152" y1="17" x2="152" y2="27" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="164" y1="9" x2="164" y2="35" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="176" y1="12" x2="176" y2="32" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="188" y1="18" x2="188" y2="26" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="200" y1="14" x2="200" y2="30" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+        <line x1="212" y1="22" x2="212" y2="22" stroke="#61DAFB" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <rect x="18" y="300" width="234" height="55" rx="6" fill="#090d16" stroke="#334155" stroke-width="1"/>
+      <text x="28" y="322" font-size="10" font-weight="700" fill="#61DAFB">Telemetry Stream</text>
+      <text x="28" y="340" font-size="9.5" fill="#94A3B8">Real-time SSE event bus syncing audio &amp; logs</text>
+    </g>
+  </g>
+
+
+  <!-- ==================== TIER 5: AWS CLOUD & AI MESH ==================== -->
+  <g transform="translate(1230, 115)">
+    <!-- Column Outer Box -->
+    <rect x="0" y="0" width="330" height="865" rx="14" fill="#0f172a" fill-opacity="0.6" stroke="#1e293b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="330" height="42" rx="14" fill="#1e293b" fill-opacity="0.5"/>
+    <text x="16" y="27" font-size="13" font-weight="700" fill="#FF9900" letter-spacing="1">5. AWS CLOUD &amp; AI MESH</text>
+
+    <!-- Service 1: AWS Bedrock -->
+    <g transform="translate(15, 60)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="300" height="145" rx="10" fill="url(#cardGradDark)" stroke="#A855F7" stroke-width="1.5"/>
+
+      <!-- Icon: AWS Bedrock Diamond Cube -->
+      <g transform="translate(16, 14)">
+        <rect x="0" y="0" width="38" height="38" rx="8" fill="#7928CA" fill-opacity="0.25" stroke="#7928CA" stroke-width="1"/>
+        <path d="M 19 8 L 29 14 L 29 26 L 19 32 L 9 26 L 9 14 Z" fill="none" stroke="#C084FC" stroke-width="1.8"/>
+        <path d="M 19 8 L 19 32 M 9 14 L 29 26 M 29 14 L 9 26" fill="none" stroke="#C084FC" stroke-width="1.2" opacity="0.6"/>
+      </g>
+
+      <text x="65" y="28" font-size="14.5" font-weight="700" fill="#FFFFFF">Amazon Bedrock</text>
+      <text x="65" y="44" font-size="11" font-weight="600" fill="#C084FC">Claude 3.5 Sonnet</text>
+
+      <line x1="16" y1="60" x2="284" y2="60" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(16, 78)" font-size="10.5" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#C084FC"/>
+        <text x="14" y="0">Root Cause Analysis (RCA) Engine</text>
+
+        <circle cx="4" cy="18" r="2.5" fill="#C084FC"/>
+        <text x="14" y="22">Automated Git Diff PR Patch Synthesis</text>
+
+        <circle cx="4" cy="40" r="2.5" fill="#C084FC"/>
+        <text x="14" y="44">Post-Mortem Markdown Generation</text>
+      </g>
+    </g>
+
+    <!-- Service 2: Amazon CloudWatch -->
+    <g transform="translate(15, 220)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="300" height="150" rx="10" fill="url(#cardGradDark)" stroke="#F59E0B" stroke-width="1.5"/>
+
+      <!-- Icon: CloudWatch Pulse / Chart -->
+      <g transform="translate(16, 14)">
+        <rect x="0" y="0" width="38" height="38" rx="8" fill="#F59E0B" fill-opacity="0.2" stroke="#F59E0B" stroke-width="1"/>
+        <path d="M 8 26 L 14 26 L 18 12 L 24 30 L 28 18 L 32 26 L 36 26" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <text x="65" y="28" font-size="14.5" font-weight="700" fill="#FFFFFF">Amazon CloudWatch</text>
+      <text x="65" y="44" font-size="11" font-weight="600" fill="#FBBF24">Alarms &amp; Log Streams</text>
+
+      <line x1="16" y1="60" x2="284" y2="60" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(16, 78)" font-size="10.5" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#FBBF24"/>
+        <text x="14" y="0">Metric Alarms: <tspan fill="#F87171" font-weight="600">HighErrorRate 5xx</tspan></text>
+
+        <circle cx="4" cy="18" r="2.5" fill="#FBBF24"/>
+        <text x="14" y="22">Container Log Groups: <tspan fill="#93C5FD">/ecs/checkout-api</tspan></text>
+
+        <circle cx="4" cy="40" r="2.5" fill="#FBBF24"/>
+        <text x="14" y="44">Live Log Insights Query &amp; Filtering</text>
+      </g>
+    </g>
+
+    <!-- Service 3: Amazon ECS -->
+    <g transform="translate(15, 385)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="300" height="150" rx="10" fill="url(#cardGradDark)" stroke="#F97316" stroke-width="1.5"/>
+
+      <!-- Icon: ECS Container Cluster -->
+      <g transform="translate(16, 14)">
+        <rect x="0" y="0" width="38" height="38" rx="8" fill="#F97316" fill-opacity="0.2" stroke="#F97316" stroke-width="1"/>
+        <!-- Cubes -->
+        <rect x="11" y="11" width="7" height="7" rx="1" fill="#FB923C"/>
+        <rect x="21" y="11" width="7" height="7" rx="1" fill="#FB923C"/>
+        <rect x="11" y="21" width="7" height="7" rx="1" fill="#FB923C"/>
+        <rect x="21" y="21" width="7" height="7" rx="1" fill="#FB923C"/>
+      </g>
+
+      <text x="65" y="28" font-size="14.5" font-weight="700" fill="#FFFFFF">Amazon ECS</text>
+      <text x="65" y="44" font-size="11" font-weight="600" fill="#FB923C">Container Orchestration</text>
+
+      <line x1="16" y1="60" x2="284" y2="60" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(16, 78)" font-size="10.5" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#FB923C"/>
+        <text x="14" y="0">Task Def Revisions: <tspan fill="#F87171">v2 (Bad)</tspan> -> <tspan fill="#34D399">v1 (Safe)</tspan></text>
+
+        <circle cx="4" cy="18" r="2.5" fill="#FB923C"/>
+        <text x="14" y="22">Zero-Downtime Rolling Task Restart</text>
+
+        <circle cx="4" cy="40" r="2.5" fill="#FB923C"/>
+        <text x="14" y="44">Canary Health Check Verification</text>
+      </g>
+    </g>
+
+    <!-- Service 4: Amazon S3 -->
+    <g transform="translate(15, 550)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="300" height="145" rx="10" fill="url(#cardGradDark)" stroke="#DC2626" stroke-width="1.5"/>
+
+      <!-- Icon: S3 Bucket -->
+      <g transform="translate(16, 14)">
+        <rect x="0" y="0" width="38" height="38" rx="8" fill="#DC2626" fill-opacity="0.2" stroke="#DC2626" stroke-width="1"/>
+        <path d="M 12 14 L 14 30 L 26 30 L 28 14 Z" fill="none" stroke="#F87171" stroke-width="1.8"/>
+        <ellipse cx="20" cy="14" rx="8" ry="3" fill="#DC2626"/>
+      </g>
+
+      <text x="65" y="28" font-size="14.5" font-weight="700" fill="#FFFFFF">Amazon S3</text>
+      <text x="65" y="44" font-size="11" font-weight="600" fill="#F87171">Object Storage &amp; Compliance</text>
+
+      <line x1="16" y1="60" x2="284" y2="60" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(16, 78)" font-size="10.5" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#F87171"/>
+        <text x="14" y="0">Bucket: <tspan fill="#FCA5A5" font-family="monospace">cloud-sentry-postmortems-prod</tspan></text>
+
+        <circle cx="4" cy="18" r="2.5" fill="#F87171"/>
+        <text x="14" y="22">Versioned Post-Mortem Archival</text>
+
+        <circle cx="4" cy="40" r="2.5" fill="#F87171"/>
+        <text x="14" y="44">Immutable SRE Compliance Audit Trail</text>
+      </g>
+    </g>
+
+    <!-- Service 5: AWS STS & IAM -->
+    <g transform="translate(15, 710)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="300" height="135" rx="10" fill="url(#cardGradDark)" stroke="#10B981" stroke-width="1.5"/>
+
+      <!-- Icon: STS Key / Lock -->
+      <g transform="translate(16, 14)">
+        <rect x="0" y="0" width="38" height="38" rx="8" fill="#10B981" fill-opacity="0.2" stroke="#10B981" stroke-width="1"/>
+        <circle cx="16" cy="19" r="6" fill="none" stroke="#34D399" stroke-width="2"/>
+        <path d="M 22 19 L 32 19 L 32 23 M 28 19 L 28 23" fill="none" stroke="#34D399" stroke-width="2"/>
+      </g>
+
+      <text x="65" y="28" font-size="14.5" font-weight="700" fill="#FFFFFF">AWS STS &amp; IAM</text>
+      <text x="65" y="44" font-size="11" font-weight="600" fill="#34D399">Identity &amp; SigV4 Engine</text>
+
+      <line x1="16" y1="60" x2="284" y2="60" stroke="#334155" stroke-width="1"/>
+
+      <g transform="translate(16, 78)" font-size="10.5" fill="#E2E8F0">
+        <circle cx="4" cy="-4" r="2.5" fill="#34D399"/>
+        <text x="14" y="0">Boto3 SigV4 Request Signing</text>
+
+        <circle cx="4" cy="18" r="2.5" fill="#34D399"/>
+        <text x="14" y="22">caller_identity validation &amp; AssumeRole</text>
+
+        <circle cx="4" cy="40" r="2.5" fill="#34D399"/>
+        <text x="14" y="44">LocalStack Mock + Live AWS Switch</text>
+      </g>
+    </g>
+  </g>
+
+
+  <!-- ==================== CROSS-TIER CONNECTING ARROWS ==================== -->
+  <!-- FastMCP -> Slack (2FA PIN & Alerts) -->
+  <path d="M 865 725 L 885 725 L 885 300 L 915 300" fill="none" stroke="#E01E5A" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#arrowCyan)"/>
+  <rect x="860" y="490" width="55" height="18" rx="3" fill="#090d16" stroke="#E01E5A" stroke-width="1"/>
+  <text x="864" y="503" font-size="9" font-weight="700" fill="#E01E5A">2FA PIN</text>
+
+  <!-- FastMCP -> React Cockpit (SSE Stream & Telemetry) -->
+  <path d="M 865 780 L 915 780" fill="none" stroke="#61DAFB" stroke-width="2" marker-end="url(#arrowCyan)"/>
+  <rect x="865" y="765" width="45" height="16" rx="3" fill="#090d16" stroke="#61DAFB" stroke-width="1"/>
+  <text x="869" y="777" font-size="9" font-weight="700" fill="#61DAFB">SSE</text>
+
+  <!-- FastMCP -> AWS Bedrock (RCA / AI Analysis) -->
+  <path d="M 865 420 L 1050 420 L 1050 240 L 1240 240" fill="none" stroke="#A855F7" stroke-width="2.5" marker-end="url(#arrowPurple)"/>
+  <rect x="1060" y="228" width="130" height="20" rx="4" fill="#090d16" stroke="#A855F7" stroke-width="1"/>
+  <text x="1066" y="242" font-size="10" font-weight="700" fill="#C084FC">Bedrock InvokeModel</text>
+
+  <!-- FastMCP -> AWS CloudWatch (Metrics & Logs) -->
+  <path d="M 865 450 L 1080 450 L 1080 370 L 1240 370" fill="none" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <rect x="1090" y="358" width="105" height="20" rx="4" fill="#090d16" stroke="#F59E0B" stroke-width="1"/>
+  <text x="1096" y="372" font-size="10" font-weight="700" fill="#FBBF24">describe_alarms</text>
+
+  <!-- FastMCP -> Amazon ECS (Rollback execution) -->
+  <path d="M 865 520 L 1110 520 L 1110 510 L 1240 510" fill="none" stroke="#F97316" stroke-width="2.5" marker-end="url(#arrowOrange)"/>
+  <rect x="1115" y="498" width="100" height="20" rx="4" fill="#090d16" stroke="#F97316" stroke-width="1"/>
+  <text x="1121" y="512" font-size="10" font-weight="700" fill="#FB923C">update_service</text>
+
+  <!-- FastMCP -> Amazon S3 (Post-Mortem Storage) -->
+  <path d="M 865 570 L 1130 570 L 1130 670 L 1240 670" fill="none" stroke="#DC2626" stroke-width="2" marker-end="url(#arrowGray)"/>
+  <rect x="1135" y="658" width="90" height="20" rx="4" fill="#090d16" stroke="#DC2626" stroke-width="1"/>
+  <text x="1142" y="672" font-size="10" font-weight="700" fill="#F87171">s3.put_object</text>
+
+
+  <!-- ==================== BOTTOM STATUS BAR & LEGEND ==================== -->
+  <g transform="translate(40, 990)">
+    <line x1="0" y1="0" x2="1520" y2="0" stroke="#334155" stroke-width="1" stroke-opacity="0.6"/>
+
+    <g transform="translate(0, 18)" font-size="11" fill="#94A3B8">
+      <text x="0" y="0">&#x26A1; <tspan font-weight="700" fill="#FFFFFF">Protocol:</tspan> Model Context Protocol (Streamable HTTP 2025-11-25+)</text>
+      <text x="390" y="0">&#x1F512; <tspan font-weight="700" fill="#FFFFFF">Security:</tspan> Out-of-Band Dual-Channel 2FA (Voice + App Card + PIN 4921)</text>
+      <text x="880" y="0">&#x2601;&#xFE0F; <tspan font-weight="700" fill="#FFFFFF">Infrastructure:</tspan> Dual-Target Engine (Live AWS CloudWatch/ECS/S3/Bedrock + LocalStack)</text>
+      <text x="1390" y="0" font-weight="700" fill="#10B981">LATENCY: &lt; 45 SEC</text>
+    </g>
+  </g>
+</svg>

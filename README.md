@@ -24,6 +24,10 @@ During a high-traffic checkout outage, 18 minutes of downtime translates to over
 
 Built on a self-hosted **Model Context Protocol (MCP)** server over **Streamable HTTP** (spec `2025-11-25+`) and **AWS Bedrock**, CloudSentry lets an engineer triage an outage, verify the blast radius, execute a Voice 2FA rollback, generate a code patch, and archive a post-mortem to S3 in under 45 seconds.
 
+## Architecture Diagram
+
+![AWS CloudSentry Architecture Diagram](./assets/architecture-diagram.svg)
+
 ```text
                        CLOUDSENTRY INCIDENT WORKFLOW
 
