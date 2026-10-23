@@ -43,7 +43,7 @@
 ### Friction Entry 2: No Native Confirmation Schema Directive for Destructive MCP Tools
 * **Task Attempted:** Preventing single-turn voice commands (or background noise) from immediately executing destructive infrastructure changes like `execute_rollback`.
 * **Observed Issue:** The current MCP tool specification treats read-only queries (`get_active_alarms`) and destructive mutations (`execute_rollback`) identically at the schema layer.
-* **Workaround Applied:** Implemented a custom two-phase state machine in `execute_rollback` (`confirmed=False` returns `AWAITING_VOICE_CONFIRMATION` with a 4-digit PIN `4921`, VoiceID match metadata, and a 300-second JIT STS session policy).
+* **Workaround Applied:** Implemented a custom two-phase state machine in `execute_rollback` (`confirmed=False` returns `AWAITING_VOICE_CONFIRMATION` with a dynamic 4-digit OTP dispatched out-of-band to `#sre-oncall-otp` in Slack, an active CloudWatch ALARM check, an N-1 revision boundary, and a scoped 300-second AWS STS IAM session policy).
 * **Recommendation for Alexa+ Team:** Add a first-class `x-alexa-confirmation-required: true` and `x-alexa-voiceid-required: true` extension to the Alexa+ MCP tool schema so Echo hardware enforces biometric confirmation natively before invoking mutating endpoints.
 
 ### Friction Entry 3: Reverse Proxy Buffering on Streamable HTTP (`/mcp`)
