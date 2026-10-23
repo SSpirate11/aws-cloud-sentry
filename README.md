@@ -3,7 +3,16 @@
 **Hackathon:** Build, Ship, Shape: Amazon Developer Hackathon 2026  
 **Primary Track:** Alexa+ (Self-Hosted Model Context Protocol Server and Ambient Voice Simulator)  
 **Mini-Challenges:** AWS Builder (Bedrock, CloudWatch, ECS, S3) and Open Source (MIT License)  
-**Developer Feedback:** Full SDK review and friction log in [`FRICTION_LOG.md`](./FRICTION_LOG.md)
+**Developer Feedback:** Full SDK review and friction log in [`FRICTION_LOG.md`](./FRICTION_LOG.md)  
+**Video Demo:** [Watch on YouTube](https://youtu.be/QqJRvBIa2I0)
+
+---
+
+## Video Demonstration
+
+[![AWS CloudSentry Demo Video](https://img.youtube.com/vi/QqJRvBIa2I0/maxresdefault.jpg)](https://youtu.be/QqJRvBIa2I0)
+
+*Click above or [watch on YouTube](https://youtu.be/QqJRvBIa2I0) to see the live physical Amazon Echo triage, Amazon Bedrock RCA, and out-of-band 2FA rollback in action.*
 
 ---
 
