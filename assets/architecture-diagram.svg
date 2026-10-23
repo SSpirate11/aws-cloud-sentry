@@ -405,7 +405,7 @@
 
       <g transform="translate(18, 78)" font-size="11" fill="#E2E8F0">
         <circle cx="4" cy="-4" r="2.5" fill="#EF4444"/>
-        <text x="14" y="0">Dynamic Challenge 4-Digit PIN Generated (e.g. <tspan fill="#FBBF24" font-weight="700">4921</tspan>)</text>
+        <text x="14" y="0">Dynamic Challenge 4-Digit PIN Generated (Cryptographic)</text>
 
         <circle cx="4" cy="18" r="2.5" fill="#EF4444"/>
         <text x="14" y="22">Dual-Channel Sync: Alexa Mobile App Card + Terminal Banner</text>
@@ -468,7 +468,7 @@
       <text x="44" y="222" font-size="10" font-weight="700" fill="#FFFFFF">CloudSentry Bot</text>
       <text x="180" y="222" font-size="9" fill="#64748B">03:14:22</text>
       <text x="32" y="242" font-size="9.5" fill="#F87171">ALARM: checkout-api HighErrorRate</text>
-      <text x="32" y="260" font-size="9.5" fill="#34D399">&#x2714; Rolled back to v1 (PIN 4921 verified)</text>
+      <text x="32" y="260" font-size="9.5" fill="#34D399">&#x2714; Rolled back to v1 (Dynamic OTP verified)</text>
     </g>
   </g>
 
@@ -734,7 +734,7 @@
 
     <g transform="translate(0, 18)" font-size="11" fill="#94A3B8">
       <text x="0" y="0">&#x26A1; <tspan font-weight="700" fill="#FFFFFF">Protocol:</tspan> Model Context Protocol (Streamable HTTP 2025-11-25+)</text>
-      <text x="390" y="0">&#x1F512; <tspan font-weight="700" fill="#FFFFFF">Security:</tspan> Out-of-Band Dual-Channel 2FA (Voice + App Card + PIN 4921)</text>
+      <text x="390" y="0">&#x1F512; <tspan font-weight="700" fill="#FFFFFF">Security:</tspan> Out-of-Band Dual-Channel 2FA (Voice + App Card + Dynamic OTP)</text>
       <text x="880" y="0">&#x2601;&#xFE0F; <tspan font-weight="700" fill="#FFFFFF">Infrastructure:</tspan> Dual-Target Engine (Live AWS CloudWatch/ECS/S3/Bedrock + LocalStack)</text>
       <text x="1390" y="0" font-weight="700" fill="#10B981">LATENCY: &lt; 45 SEC</text>
     </g>

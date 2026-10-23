@@ -54,7 +54,7 @@ Built on a self-hosted **Model Context Protocol (MCP)** server over **Streamable
     |-- 5. simulate_blast_radius    (12.4k RPS Canary + JIT IAM Policy)
                |
                v
-  "Alexa, rollback checkout-api" -> [ Voice 2FA + VoiceID + PIN 4921 Gate ]
+  "Alexa, rollback checkout-api" -> [ Voice 2FA + VoiceID + Dynamic OTP Gate ]
                |
                v
   "Confirm rollback"             -> [ ECS Task Rolled Back + Slack Notified ]

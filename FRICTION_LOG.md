@@ -46,7 +46,7 @@
 * **Workaround Used:** Implemented multi-channel PIN synchronization in `backend/server.py` and `backend/aws_tools.py`:
   1. Rendered a high-contrast terminal banner on stdout with ASCII borders.
   2. Pushed an Alexa companion mobile app Card (`Card.Simple`) displaying the PIN directly on the engineer's phone screen.
-  3. Added an emergency fallback default PIN (`4921`) for demo resilience.
+  3. Enforced strict single-use cryptographic OTP verification with immediate token expiration upon verification.
 * **Actionable Suggestion:** The Alexa Skills Kit should support native interactive visual notifications (or push-to-phone prompts) that can automatically pop up companion confirmation banners on the user's registered mobile device during voice-initiated high-security actions.
 
 ### Friction Log Entry 2: Skill Worked in Alexa Mobile App but Failed on Physical Echo Hardware

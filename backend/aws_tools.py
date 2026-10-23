@@ -346,9 +346,9 @@ class AWSToolsManager:
             }
 
             logger.info("\n" + "=" * 60)
-            logger.info(f"🔑 OUT-OF-BAND 2FA PIN GENERATED: [ {dynamic_otp} ] (or demo fallback 4921)")
+            logger.info(f"🔑 OUT-OF-BAND 2FA PIN GENERATED: [ {dynamic_otp} ]")
             logger.info("   Delivered to: Slack #sre-oncall-otp & Alexa App Card")
-            logger.info(f"   Speak: 'Alexa, confirm rollback {dynamic_otp}' (or 4921)")
+            logger.info(f"   Speak: 'Alexa, confirm rollback {dynamic_otp}'")
             logger.info("=" * 60 + "\n")
 
             # Deliver the OTP out-of-band to the SRE's authenticated Slack channel
@@ -376,13 +376,12 @@ class AWSToolsManager:
                 "jit_iam_policy": sts_session
             }
 
-        # Guardrail 3: Strictly require a pending OTP and matching provided_pin on confirmed=True
+        # Guardrail 3: Strictly require a valid, unexpired out-of-band OTP matching the generated secret
         pending_otp_record = self.pending_otps.get(service)
-        allowed_pins = [pending_otp_record["pin"], "4921"] if pending_otp_record else ["4921"]
         if (
             not pending_otp_record
             or not provided_pin
-            or provided_pin not in allowed_pins
+            or str(provided_pin).strip() != str(pending_otp_record.get("pin")).strip()
             or time.time() > pending_otp_record["expires_at"]
         ):
             return {

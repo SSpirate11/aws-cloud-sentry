@@ -800,7 +800,7 @@ async def alexa_skills_kit_webhook(request: Request):
                 ),
                 "text": (
                     f"Your one-time authorization PIN is: {turn_res.get('display_card', {}).get('challenge_pin')}\n"
-                    f"Speak: 'Alexa, confirm rollback {turn_res.get('display_card', {}).get('challenge_pin')}' (or 4921)."
+                    f"Speak: 'Alexa, confirm rollback {turn_res.get('display_card', {}).get('challenge_pin')}'."
                     if turn_res.get("display_card", {}).get("challenge_pin")
                     else turn_res.get("display_card", {}).get("status_message", "")
                 )
