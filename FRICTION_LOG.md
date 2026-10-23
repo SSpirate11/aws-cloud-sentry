@@ -2,7 +2,8 @@
 
 **Event:** Build, Ship, Shape: Amazon Developer Hackathon 2026  
 **Primary Track:** Alexa+ (Self-Hosted MCP Server and Simulated Voice Experience)  
-**Mini-Challenges:** AWS Builder and Open Source
+**Mini-Challenges:** AWS Builder and Open Source  
+**Repository:** [https://github.com/SSpirate11/aws-cloud-sentry](https://github.com/SSpirate11/aws-cloud-sentry)
 
 ---
 
@@ -34,26 +35,63 @@
 
 ## 2. Detailed Friction Log Entries
 
-### Friction Entry 1: Voice Turn Timeout vs. Multi-Call AWS Cold Starts
-* **Task Attempted:** Chaining CloudWatch alarm inspection, log extraction, and Bedrock root-cause synthesis in one synchronous voice turn.
-* **Observed Issue:** Serial execution of three `boto3` calls plus LLM inference takes 2.2 to 3.4 seconds on cold connections, creating noticeable silence before TTS playback starts.
-* **Workaround Applied:** Added immediate visual state transitions (`THINKING` -> progressive tool trace streaming in the UI) and kept spoken responses under two sentences while pushing full stack traces and diffs to the Echo Show screen.
-* **Recommendation for Alexa+ Team:** Provide a native MCP progress notification hook that triggers an ambient Echo Show "thinking chime" or brief filler acknowledgement whenever an MCP tool call exceeds 800ms.
+### Friction Log Entry 1: User Blindness on Ambient Voice 2FA PIN Delivery
+* **Specific Task Attempted:** Executing a destructive ECS service rollback via voice on the physical Amazon Echo.
+* **Steps Taken:**
+  1. Spoke: *"Alexa, ask Cloud Sentry to rollback checkout-api."*
+  2. Alexa responded: *"Destructive action detected. Please state your 4-digit security PIN to confirm."*
+* **Expected Result:** Engineer immediately receives the dynamic 2FA PIN via a natural out-of-band channel and speaks it back to complete the rollback.
+* **Actual Result:** The dynamic PIN was generated in backend memory, leaving the user standing in front of the Echo speaker without knowing where the PIN was sent or what to say (*"What's the 4-digit PIN?"*).
+* **Severity Rating:** **Critical** (completely blocked incident remediation workflow).
+* **Workaround Used:** Implemented multi-channel PIN synchronization in `backend/server.py` and `backend/aws_tools.py`:
+  1. Rendered a high-contrast terminal banner on stdout with ASCII borders.
+  2. Pushed an Alexa companion mobile app Card (`Card.Simple`) displaying the PIN directly on the engineer's phone screen.
+  3. Added an emergency fallback default PIN (`4921`) for demo resilience.
+* **Actionable Suggestion:** The Alexa Skills Kit should support native interactive visual notifications (or push-to-phone prompts) that can automatically pop up companion confirmation banners on the user's registered mobile device during voice-initiated high-security actions.
 
-### Friction Entry 2: No Native Confirmation Schema Directive for Destructive MCP Tools
-* **Task Attempted:** Preventing single-turn voice commands (or background noise) from immediately executing destructive infrastructure changes like `execute_rollback`.
-* **Observed Issue:** The current MCP tool specification treats read-only queries (`get_active_alarms`) and destructive mutations (`execute_rollback`) identically at the schema layer.
-* **Workaround Applied:** Implemented a custom two-phase state machine in `execute_rollback` (`confirmed=False` returns `AWAITING_VOICE_CONFIRMATION` with a dynamic 4-digit OTP dispatched out-of-band to `#sre-oncall-otp` in Slack, an active CloudWatch ALARM check, an N-1 revision boundary, and a scoped 300-second AWS STS IAM session policy).
-* **Recommendation for Alexa+ Team:** Add a first-class `x-alexa-confirmation-required: true` and `x-alexa-voiceid-required: true` extension to the Alexa+ MCP tool schema so Echo hardware enforces biometric confirmation natively before invoking mutating endpoints.
+### Friction Log Entry 2: Skill Worked in Alexa Mobile App but Failed on Physical Echo Hardware
+* **Specific Task Attempted:** Running the custom skill on a real physical Amazon Echo Dot/Show in the room.
+* **Steps Taken:**
+  1. Enabled the skill in Developer Mode and verified successful execution inside the Alexa Developer Console Simulator and Alexa Mobile App.
+  2. Spoke the invocation phrase *"Alexa, open Cloud Sentry"* to the physical Echo speaker in the room.
+* **Expected Result:** The physical Echo wakes up with a cyan ring and speaks the CloudSentry triage greeting.
+* **Actual Result:** The physical Echo stated: *"I couldn't find a skill called Cloud Sentry"* or remained silent, despite working seamlessly in the software simulator.
+* **Severity Rating:** **High** (delayed physical hardware validation).
+* **Workaround Used:**
+  1. Discovered that physical devices enforce strict device-account localization matching; the hardware language profile had to be explicitly unified to `en-US`.
+  2. Re-toggled the skill's testing toggle from `Off` -> `Development` to force an immediate device manifest sync across Amazon's device registry.
+  3. Re-established the Cloudflare Tunnel endpoint to ensure the live TLS socket was active.
+* **Actionable Suggestion:** The Alexa Developer Console should provide a "Device Status & Sync" tab showing whether connected physical hardware has downloaded the latest interaction model revision and active endpoint URL.
 
-### Friction Entry 3: Reverse Proxy Buffering on Streamable HTTP (`/mcp`)
-* **Task Attempted:** Running the FastAPI + `MCPServer.streamable_http_app()` server behind local Vite dev proxies and container ingress.
-* **Observed Issue:** Default proxy buffering can delay chunked JSON-RPC responses unless explicit headers and clean sub-path mounting are configured.
-* **Workaround Applied:** Mounted `/mcp` directly on the ASGI application and exposed `/api/mcp-tools` for synchronous schema inspection by the simulator HUD.
-* **Recommendation for Alexa+ Team:** Publish an official FastAPI + AWS App Runner / ECS Fargate reference template pre-configured for MCP Streamable HTTP (`2025-11-25+`).
+### Friction Log Entry 3: Alexa Interaction Model Validator Rejection on "s3"
+* **Specific Task Attempted:** Adding natural sample utterances for incident compliance (e.g., *"archive postmortem to s3"*).
+* **Steps Taken:**
+  1. Added `"archive postmortem to s3"` to `IncidentTriageIntent` in `alexa-skill/interactionModels/custom/en-US.json`.
+  2. Triggered model compilation in the Alexa Developer Console.
+* **Expected Result:** Model builds cleanly and accepts "s3" as a common technology phrase.
+* **Actual Result:** Build failed with a blocking schema error: `Validation Error: "s3" is not a valid utterance word. Sample utterances cannot contain numbers or unspaced acronyms.`
+* **Severity Rating:** **Medium** (broke build pipeline).
+* **Workaround Used:** Replaced `"s3"` with phonetic spacing `"s. three"` and replaced `"post-mortem"` with `"postmortem"` in the interaction model JSON.
+* **Actionable Suggestion:** Incorporate an AWS technical lexicon into the ASK NLU tokenizer that automatically recognizes cloud terms (`s3`, `ec2`, `ecs`, `vpc`, `iam`) and maps them to valid phonetic tokens without manual punctuation workarounds.
 
-### Friction Entry 4: Lack of a Local Desktop Simulator for Echo Show APL + MCP
-* **Task Attempted:** Testing multimodal voice + screen cards alongside live MCP tool execution traces on a local developer machine.
-* **Observed Issue:** Existing Alexa developer console simulators do not provide a unified view showing both the Echo Show display card and the underlying MCP JSON-RPC tool sequence.
-* **Workaround Applied:** Built our own split-screen React simulator combining a 3D Echo hardware model, an Echo Show 10 display card, and a live MCP telemetry inspector.
-* **Recommendation for Alexa+ Team:** Ship a local `alexa-mcp-inspector` desktop view that renders multimodal screen cards side-by-side with MCP tool execution logs.
+### Friction Log Entry 4: Ephemeral Tunnel Subdomains Slowing Rapid Hardware Iteration
+* **Specific Task Attempted:** Iteratively updating FastAPI endpoints and testing changes live with the physical Echo.
+* **Steps Taken:**
+  1. Ran `cloudflared` to expose local port 8000 over HTTPS for Alexa Cloud callbacks.
+  2. Restarted backend services during feature updates.
+* **Expected Result:** Alexa continues routing requests to the developer environment smoothly.
+* **Actual Result:** Every tunnel restart generated a new random subdomain (e.g., `ferry-specialty-perspectives-bridges.trycloudflare.com`), requiring manual navigation to the Alexa Developer Console to paste the new URL, re-save, and wait for endpoint propagation.
+* **Severity Rating:** **Medium** (high developer friction during debugging).
+* **Workaround Used:** Kept a persistent background daemon for Cloudflare Tunnel and established fixed webhook routing at `/api/alexa-webhook`.
+* **Actionable Suggestion:** Amazon should offer an official `ask-cli tunnel` command that automatically sets up a persistent, secure reverse proxy from the developer machine to the Alexa skill endpoint during development.
+
+### Friction Log Entry 5: Model Context Protocol (MCP) Multi-Tool Execution vs. Alexa 8-Second Voice Timeout
+* **Specific Task Attempted:** Chaining CloudWatch alarm extraction, container log querying, and Amazon Bedrock Claude 3.5 Sonnet analysis in a single voice turn.
+* **Steps Taken:**
+  1. User asked: *"Alexa, ask Cloud Sentry what happened in production."*
+  2. Backend sequentially awaited `get_active_alarms`, `fetch_error_logs`, and Bedrock `invoke_model`.
+* **Expected Result:** Alexa waits for the full AI diagnosis and speaks the post-mortem.
+* **Actual Result:** When Bedrock inference took > 7.5 seconds under high network load, Alexa timed out with: *"There was a problem with the requested skill's response."*
+* **Severity Rating:** **Critical** (caused conversational dropouts during outages).
+* **Workaround Used:** Decomposed the voice workflow into two rapid conversational phases: Phase 1 returns immediate diagnostic telemetry in < 1.2s while priming Bedrock; Phase 2 retrieves the deep root-cause synthesis upon follow-up inquiry.
+* **Actionable Suggestion:** Add a native "progressive response" or ambient thinking audio chime to the Alexa+ SDK that automatically keeps the voice session alive while waiting for long-running LLM tool calls.
