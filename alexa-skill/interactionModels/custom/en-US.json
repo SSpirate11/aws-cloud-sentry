@@ -106,7 +106,8 @@
           "samples": [
             "generate post-mortem",
             "generate incident report",
-            "archive postmortem to s3"
+            "archive postmortem to s. three",
+            "archive postmortem report"
           ]
         }
       ],
